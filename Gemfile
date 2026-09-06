@@ -42,11 +42,7 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
-# CSV is shipped as a bundled gem in newer Ruby releases and must be declared explicitly.
-gem "csv"
-
-# Parse PDF files [https://github.com/yob/pdf-reader]
-gem "pdf-reader"
+gem "year_end_statements", path: "../year_end_statements"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
