@@ -1,6 +1,6 @@
-# How To Use YearEndStatements::Extractor
+# How To Use CCYearEndStatement::Extractor
 
-`YearEndStatements::Extractor` reads a Bank of America year-end summary PDF and returns a structured result containing:
+`CCYearEndStatement::Extractor` reads a Bank of America year-end summary PDF and returns a structured result containing:
 
 - categories
 - subcategories
@@ -27,10 +27,10 @@ Run the extractor:
 ```ruby
 path = "/Users/todd/Documents/BoA_CC_YearEndSummary_2025.pdf"
 
-result = YearEndStatements::Extractor.call(filename: path)
+result = CCYearEndStatement::Extractor.call(filename: path)
 ```
 
-The returned `result` is a `YearEndStatements::Extractor::Result` with these readers:
+The returned `result` is a `CCYearEndStatement::Extractor::Result` with these readers:
 
 - `result.filename`
 - `result.page_count`
@@ -133,7 +133,7 @@ end
 
 ```ruby
 result.transactions.first
-# => #<data YearEndStatements::Extractor::Transaction
+# => #<data CCYearEndStatement::Extractor::Transaction
 #      date=...,
 #      description="...",
 #      location="...",
@@ -238,25 +238,25 @@ result.transactions.select { |transaction| transaction.amount < 0 }
 If `filename` is missing or blank, the extractor raises `ArgumentError`.
 
 ```ruby
-YearEndStatements::Extractor.call(filename: nil)
+CCYearEndStatement::Extractor.call(filename: nil)
 ```
 
 If the file does not exist, it raises `Errno::ENOENT`.
 
 ```ruby
-YearEndStatements::Extractor.call(filename: "/tmp/missing.pdf")
+CCYearEndStatement::Extractor.call(filename: "/tmp/missing.pdf")
 ```
 
 ## Write Transactions To CSV
 
-`YearEndStatements::CSVWriter` uses `YearEndStatements::Extractor` internally and writes the flat transaction list to a delimited file.
+`CCYearEndStatement::CSVWriter` uses `CCYearEndStatement::Extractor` internally and writes the flat transaction list to a delimited file.
 
 By default it writes a pipe-delimited file next to the source PDF.
 
 ```ruby
 path = "/Users/todd/Documents/BoA_CC_YearEndSummary_2025.pdf"
 
-output_path = YearEndStatements::CSVWriter.call(filename: path)
+output_path = CCYearEndStatement::CSVWriter.call(filename: path)
 
 output_path
 # => "/Users/todd/Documents/BoA_CC_YearEndSummary_2025.csv"
@@ -274,7 +274,7 @@ The output includes these headers:
 To use a different separator or output path:
 
 ```ruby
-YearEndStatements::CSVWriter.call(
+CCYearEndStatement::CSVWriter.call(
   filename: path,
   output_filename: "/Users/todd/Documents/year_end_transactions.csv",
   field_separator: ","
@@ -283,25 +283,25 @@ YearEndStatements::CSVWriter.call(
 
 ## Read Transactions From CSV
 
-`YearEndStatements::CSVExtractor` reads a delimited file created by `YearEndStatements::CSVWriter` and rebuilds the same structured category, subcategory, and transaction result.
+`CCYearEndStatement::CSVExtractor` reads a delimited file created by `CCYearEndStatement::CSVWriter` and rebuilds the same structured category, subcategory, and transaction result.
 
-It auto-detects the delimiter from the CSV header row for files written by `YearEndStatements::CSVWriter`. If detection is not enough for a custom file, you can still pass `field_separator` explicitly.
+It auto-detects the delimiter from the CSV header row for files written by `CCYearEndStatement::CSVWriter`. If detection is not enough for a custom file, you can still pass `field_separator` explicitly.
 
 ```ruby
 csv_path = "/Users/todd/Documents/BoA_CC_YearEndSummary_2025.csv"
 
-result = YearEndStatements::CSVExtractor.call(filename: csv_path)
+result = CCYearEndStatement::CSVExtractor.call(filename: csv_path)
 
 result.categories.map(&:name)
 # => ["Merchandise", "Entertainment", ...]
 ```
 
-The returned object is the same `YearEndStatements::Extractor::Result` shape, so `result.categories`, `result.transactions`, category totals, and subcategory totals all work the same way as the PDF extractor.
+The returned object is the same `CCYearEndStatement::Extractor::Result` shape, so `result.categories`, `result.transactions`, category totals, and subcategory totals all work the same way as the PDF extractor.
 
 If the CSV uses a different separator, pass it explicitly:
 
 ```ruby
-result = YearEndStatements::CSVExtractor.call(
+result = CCYearEndStatement::CSVExtractor.call(
   filename: "/Users/todd/Documents/year_end_transactions.csv",
   field_separator: ","
 )
@@ -314,7 +314,7 @@ You can run the extractor without opening an interactive console:
 ```bash
 bin/rails runner '
 path = "/Users/todd/Documents/BoA_CC_YearEndSummary_2025.pdf"
-result = YearEndStatements::Extractor.call(filename: path)
+result = CCYearEndStatement::Extractor.call(filename: path)
 
 puts "File: #{result.filename}"
 puts "Pages: #{result.page_count}"
@@ -329,7 +329,7 @@ end
 
 ## Summary
 
-Use `YearEndStatements::Extractor.call(filename: path)` when you want:
+Use `CCYearEndStatement::Extractor.call(filename: path)` when you want:
 
 - category totals from `result.categories`
 - subcategory totals from `category.subcategories`

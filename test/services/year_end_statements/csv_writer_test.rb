@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class YearEndStatements::CSVWriterTest < ActiveSupport::TestCase
+class CCYearEndStatement::CSVWriterTest < ActiveSupport::TestCase
   FakeExtractor = Struct.new(:result) do
     def call(filename:)
       raise ArgumentError, "filename is required" if filename.blank?
@@ -16,7 +16,7 @@ class YearEndStatements::CSVWriterTest < ActiveSupport::TestCase
       source_path = File.join(dir, "statement.pdf")
       File.write(source_path, "pdf")
 
-      output_path = YearEndStatements::CSVWriter.call(
+      output_path = CCYearEndStatement::CSVWriter.call(
         filename: source_path,
         extractor: FakeExtractor.new(extractor_result)
       )
@@ -36,7 +36,7 @@ class YearEndStatements::CSVWriterTest < ActiveSupport::TestCase
       output_path = File.join(dir, "transactions.txt")
       File.write(source_path, "pdf")
 
-      returned_path = YearEndStatements::CSVWriter.call(
+      returned_path = CCYearEndStatement::CSVWriter.call(
         filename: source_path,
         output_filename: output_path,
         field_separator: ",",
@@ -55,19 +55,19 @@ class YearEndStatements::CSVWriterTest < ActiveSupport::TestCase
   private
 
   def extractor_result
-    YearEndStatements::Extractor::Result.new(
+    CCYearEndStatement::Extractor::Result.new(
       filename: "/tmp/statement.pdf",
       page_count: 1,
       categories: [
-        YearEndStatements::Extractor::Category.new(
+        CCYearEndStatement::Extractor::Category.new(
           name: "Merchandise",
           total: BigDecimal("740.61"),
           subcategories: [
-            YearEndStatements::Extractor::Subcategory.new(
+            CCYearEndStatement::Extractor::Subcategory.new(
               name: "Clothing",
               total: BigDecimal("740.61"),
               transactions: [
-                YearEndStatements::Extractor::Transaction.new(
+                CCYearEndStatement::Extractor::Transaction.new(
                   date: Date.new(2025, 7, 1),
                   description: "MENS WAREHOUSE 1534",
                   location: "JONESBORO, AR",
@@ -79,15 +79,15 @@ class YearEndStatements::CSVWriterTest < ActiveSupport::TestCase
             )
           ]
         ),
-        YearEndStatements::Extractor::Category.new(
+        CCYearEndStatement::Extractor::Category.new(
           name: "Travel and Transportation",
           total: BigDecimal("-100.0"),
           subcategories: [
-            YearEndStatements::Extractor::Subcategory.new(
+            CCYearEndStatement::Extractor::Subcategory.new(
               name: "Hotels",
               total: BigDecimal("-100.0"),
               transactions: [
-                YearEndStatements::Extractor::Transaction.new(
+                CCYearEndStatement::Extractor::Transaction.new(
                   date: Date.new(2025, 5, 9),
                   description: "COMFORT INNS",
                   location: "ORLANDO, FL",

@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class YearEndStatements::ExtractorTest < ActiveSupport::TestCase
+class CCYearEndStatement::ExtractorTest < ActiveSupport::TestCase
   FakePage = Struct.new(:text)
   FakeReader = Struct.new(:page_count, :pages)
 
@@ -55,7 +55,7 @@ class YearEndStatements::ExtractorTest < ActiveSupport::TestCase
 
   test "requires a settable filename" do
     error = assert_raises(ArgumentError) do
-      YearEndStatements::Extractor.call(filename: nil, reader: fake_reader)
+      CCYearEndStatement::Extractor.call(filename: nil, reader: fake_reader)
     end
 
     assert_match(/filename is required/i, error.message)
@@ -63,12 +63,12 @@ class YearEndStatements::ExtractorTest < ActiveSupport::TestCase
 
   test "raises when the PDF file is missing" do
     assert_raises(Errno::ENOENT) do
-      YearEndStatements::Extractor.call(filename: "/tmp/missing-year-end-summary.pdf")
+      CCYearEndStatement::Extractor.call(filename: "/tmp/missing-year-end-summary.pdf")
     end
   end
 
   test "extracts categories, subcategories, and transactions from a year-end statement" do
-    result = YearEndStatements::Extractor.call(
+    result = CCYearEndStatement::Extractor.call(
       filename: "/statements/BoA_CC_YearEndSummary_2025.pdf",
       reader: fake_reader
     )
@@ -120,7 +120,7 @@ class YearEndStatements::ExtractorTest < ActiveSupport::TestCase
     path = "/Users/todd/Documents/BoA_CC_YearEndSummary_2025.pdf"
     skip "Year-end summary PDF is not available at #{path}" unless File.exist?(path)
 
-    result = YearEndStatements::Extractor.call(filename: path)
+    result = CCYearEndStatement::Extractor.call(filename: path)
 
     assert_equal path, result.filename
     assert_equal 14, result.page_count
@@ -136,7 +136,7 @@ class YearEndStatements::ExtractorTest < ActiveSupport::TestCase
   private
 
   def extract_sample
-    YearEndStatements::Extractor.call(
+    CCYearEndStatement::Extractor.call(
       filename: "BoA_CC_YearEndSummary_2025.pdf",
       reader: fake_reader
     )
