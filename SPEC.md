@@ -32,6 +32,7 @@ Decisions locked in:
 - **Lookahead filtering** = live partial-match filter as you type (debounced Turbo Frame refresh; no autocomplete dropdown)
 - **Money in cents** — all dollar amounts persist as signed integers (`*_cents`); convert to/from `BigDecimal` dollars only at the gem import/export boundary and for display
 - **Transaction checksums** — each stored transaction has a content checksum; importers skip rows whose checksum already exists in the DB, but **do not** dedupe within a single import file (duplicate lines in one file are all stored)
+- **Bank AR model names** — ActiveRecord classes and tables are `AccountStatement` / `AccountTransaction` (`account_statements` / `account_transactions`). `BankAccountStatement` is the gem module; `BankStatement` is the Rails application module — both names are unavailable for AR. Credit-card AR models stay `CreditCardStatement` / `CreditCardTransaction` (no clash with `CCYearEndStatement`).
 
 ## Current state
 
@@ -45,7 +46,7 @@ Decisions locked in:
 
 ## Data model
 
-### 1. `bank_account_statements`
+### 1. `account_statements`
 
 | Column                    | Type         | Notes                                               |
 | ------------------------- | ------------ | --------------------------------------------------- |
@@ -66,24 +67,27 @@ Decisions locked in:
 | `import_format`           | string       | `pdf` or `csv`                                      |
 | timestamps                |              |                                                     |
 
+- ActiveRecord model: **`AccountStatement`**
 - `has_one_attached :source_file`
-- `has_many :bank_account_transactions, dependent: :destroy`
+- `has_many :account_transactions`, `dependent: :destroy`
 
 Indexes: `[period_start, period_end]`, `account_number`
 
-### 2. `bank_account_transactions`
+### 2. `account_transactions`
 
-| Column                      | Type    | Notes                                                                      |
-| --------------------------- | ------- | -------------------------------------------------------------------------- |
-| `bank_account_statement_id` | fk      | required                                                                   |
-| `date`                      | date    | required                                                                   |
-| `description`               | text    | required                                                                   |
-| `amount_cents`              | integer | signed cents; required                                                     |
-| `section`                   | string  | e.g. Deposits / Withdrawals; required                                      |
-| `checksum`                  | string  | content fingerprint; required; **not** unique (intra-import dupes allowed) |
-| timestamps                  |         |                                                                            |
+| Column                 | Type    | Notes                                                                      |
+| ---------------------- | ------- | -------------------------------------------------------------------------- |
+| `account_statement_id` | fk      | required                                                                   |
+| `date`                 | date    | required                                                                   |
+| `description`          | text    | required                                                                   |
+| `amount_cents`         | integer | signed cents; required                                                     |
+| `section`              | string  | e.g. Deposits / Withdrawals; required                                      |
+| `checksum`             | string  | content fingerprint; required; **not** unique (intra-import dupes allowed) |
+| timestamps             |         |                                                                            |
 
 Indexes: `date`, `section`, `description` (for LIKE), `checksum` (non-unique, for “already stored?” lookups)
+
+ActiveRecord model: **`AccountTransaction`**.
 
 ### 3. `credit_card_statements`
 
@@ -140,7 +144,7 @@ Do **not** include `statement_id` in the checksum (same logical txn re-imported 
 
 **Import algorithm:**
 
-1. Load existing checksums for that transactions table into a Set (`BankAccountTransaction.distinct.pluck(:checksum)` or scoped query — full table Set is fine at personal scale).
+1. Load existing checksums for that transactions table into a Set (`AccountTransaction.distinct.pluck(:checksum)` or scoped query — full table Set is fine at personal scale).
 2. For each gem transaction in order:
    - Convert amount → `amount_cents`; compute `checksum`.
    - If `checksum` is in the **pre-import** existing Set → skip (already stored).
@@ -149,7 +153,7 @@ Do **not** include `statement_id` in the checksum (same logical txn re-imported 
 3. Create the parent statement even if every txn is skipped; flash should report `imported` vs `skipped_duplicate` counts.
 4. **No UNIQUE DB constraint** on `checksum` — uniqueness would incorrectly block legitimate intra-file duplicates.
 
-## Helper: `BankAccountTransaction.checksum_for(date:, section:, description:, amount_cents:)` (and CC equivalent), used by importers and tests.
+Helper: `AccountTransaction.checksum_for(date:, section:, description:, amount_cents:)` and `CreditCardTransaction.checksum_for(...)`, used by importers and tests.
 
 ## Import flow
 
@@ -166,10 +170,10 @@ Upload form (type + PDF/CSV)
 
 ### Services
 
-- `BankAccountStatements::Importer.call(uploaded_file:)`
-  - `.pdf` → `BankAccountStatement::Extractor`
-  - `.csv` → `BankAccountStatement::CSVExtractor`
-  - Creates `BankAccountStatement`; converts summary `BigDecimal` fields → `*_cents`
+- `AccountStatements::Importer.call(uploaded_file:)`
+  - `.pdf` → `BankAccountStatement::Extractor` (gem)
+  - `.csv` → `BankAccountStatement::CSVExtractor` (gem)
+  - Creates `AccountStatement`; converts summary `BigDecimal` fields → `*_cents`
   - Maps each `result.transactions` row through cents + checksum; inserts only if checksum not already stored
   - Copies summary fields when present (PDF only)
 
@@ -196,8 +200,8 @@ Both importers:
 ```ruby
 root "home#index"
 
-resources :bank_account_statements, only: %i[index show new create destroy] do
-  resources :transactions, only: :index, module: :bank_account_statements
+resources :account_statements, only: %i[index show new create destroy] do
+  resources :transactions, only: :index, module: :account_statements
 end
 
 resources :credit_card_statements, only: %i[index show new create destroy] do
@@ -205,7 +209,7 @@ resources :credit_card_statements, only: %i[index show new create destroy] do
 end
 ```
 
-Optional convenience: top-level `GET /bank_account_transactions` and `GET /credit_card_transactions` for cross-statement browsing with the same filters (nice-to-have; statement-scoped pages are required).
+Optional convenience: top-level `GET /account_transactions` and `GET /credit_card_transactions` for cross-statement browsing with the same filters (nice-to-have; statement-scoped pages are required).
 
 ### Home / nav
 
@@ -309,13 +313,13 @@ These are **not** separate late steps — they land in Steps 1–2 (schema + imp
 
 ## Key files to add
 
-- `db/migrate/*_create_bank_account_statements.rb` (+ transactions, credit*card*_) — money as `_\_cents`integers;`checksum` on transaction tables
-- `app/models/bank_account_statement.rb`, `bank_account_transaction.rb`, `credit_card_statement.rb`, `credit_card_transaction.rb`
-- `app/models/concerns/money_cents.rb` or `lib/money.rb` — dollars↔cents conversion
-- Checksum helpers on transaction models (or shared concern)
-- `app/services/bank_account_statements/importer.rb`, `app/services/credit_card_statements/importer.rb`
+- `db/migrate/*_create_bank_account_statements.rb` (+ rename to `account_*`, credit_card_*) — money as `*_cents` integers; `checksum` on transaction tables
+- `app/models/account_statement.rb`, `account_transaction.rb`, `credit_card_statement.rb`, `credit_card_transaction.rb`
+- `lib/money.rb` — dollars↔cents conversion
+- Checksum helpers on transaction models
+- `app/services/account_statements/importer.rb`, `app/services/credit_card_statements/importer.rb`
 - Controllers under `app/controllers/` (+ nested transaction controllers)
-- Views under `app/views/bank_account_statements/`, `credit_card_statements/`, nested `transactions/`
+- Views under `app/views/account_statements/`, `credit_card_statements/`, nested `transactions/`
 - `app/javascript/controllers/live_filter_controller.js`
 - Tests under `test/models/`, `test/services/`, `test/controllers/` or `test/integration/`
 
