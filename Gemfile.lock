@@ -1,4 +1,11 @@
 PATH
+  remote: ../bank_account_statements
+  specs:
+    bank_account_statements (0.1.0)
+      csv
+      pdf-reader
+
+PATH
   remote: ../cc_year_end_statement
   specs:
     cc_year_end_statement (0.1.0)
@@ -416,6 +423,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  bank_account_statements!
   bootsnap
   brakeman
   bundler-audit
@@ -459,6 +467,7 @@ CHECKSUMS
   addressable (2.9.0) sha256=7fdf6ac3660f7f4e867a0838be3f6cf722ace541dd97767fa42bc6cfa980c7af
   afm (1.0.0) sha256=5bd4d6f6241e7014ef090985ec6f4c3e9745f6de0828ddd58bc1efdd138f4545
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
+  bank_account_statements (0.1.0)
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bcrypt_pbkdf (1.1.2) sha256=c2414c23ce66869b3eb9f643d6a3374d8322dfb5078125c82792304c10b94cf6
   bigdecimal (4.1.2) sha256=53d217666027eab4280346fba98e7d5b66baaae1b9c3c1c0ffe89d48188a3fbd

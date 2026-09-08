@@ -42,6 +42,7 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+gem "bank_account_statements", path: "../bank_account_statements", require: "bank_account_statement"
 gem "cc_year_end_statement", path: "../cc_year_end_statement"
 
 group :development, :test do

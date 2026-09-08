@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base href="http://localhost:49374/700e3c8c-8eba-4679-92ea-2285eefe9d02/" />
+  <title>bank-statement-app-import-schema-summary-transaction-pages-6c923b91.md</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  	<link href="bundled/default-markdown.css" rel="stylesheet" />
+	<link href="bundled/katex.css" rel="stylesheet" />
+	<link href="bundled/colour-scheme.css" rel="stylesheet" />
+	<link href="bundled/settings.css" rel="stylesheet" />
+  	<script src="bundled/smiles-drawer.min.js" type="application/javascript"></script>
+
+  <script type="application/javascript">
+    function printAndClose(enabled) {
+      if (typeof SmiDrawer === "function") {
+        const svgs = document.querySelectorAll('svg[data-smiles]');
+        svgs.forEach(function(svg) {
+          var smiles = svg.getAttribute('data-smiles');
+          const configJson = svg.getAttribute('data-smiles-config');
+          let moleculeOptions;
+          let reactionOptions;
+          if (configJson) {
+            try {
+              // decodeURIComponent to match encodeURIComponent in processMarkdown.ts
+              var parsedConfig = JSON.parse(decodeURIComponent(configJson));
+              moleculeOptions = parsedConfig.moleculeOptions ?? {};
+              reactionOptions = parsedConfig.reactionOptions ?? {};
+            } catch (e) {
+              // ignore, fallback to empty options
+            }
+          }
+          var parent = svg.parentNode;
+          var errorDiv = document.createElement('div');
+          errorDiv.style.color = 'red';
+          errorDiv.style.fontFamily = 'monospace';
+          errorDiv.style.background = '#fff0f0';
+          errorDiv.style.border = '1px solid #f88';
+          errorDiv.style.padding = '0.5em 1em';
+          errorDiv.style.margin = '0.5em 0';
+          function showError(msg) {
+            if (parent) {
+              var pre = document.createElement('pre');
+              pre.textContent = msg;
+              errorDiv.appendChild(pre);
+              parent.replaceChild(errorDiv, svg);
+            }
+          }
+          try {
+            var drawer = new SmiDrawer(moleculeOptions, reactionOptions);
+            SmilesDrawer.parse(smiles, function(tree) {
+              drawer.draw(smiles, svg);
+            }, function(err) {
+              showError('Invalid SMILES: ' + smiles + (err ? '\n' + err : ''));
+            });
+          } catch (err) {
+            showError('Invalid SMILES: ' + smiles + (err ? '\n' + err : ''));
+          }
+        });
+      }
+      if (enabled) {
+        window.addEventListener("afterprint", (event) => {
+          fetch("completed").then(window.close);
+        });
+        setTimeout(window.print, 500);
+      }
+    }
+    function listenForUpdates() {
+      const ws = new WebSocket(`ws://localhost:${window.location.port}`);
+      ws.onopen = function () {
+        const sessionId = window.location.pathname.split("/")[1];
+        ws.send(JSON.stringify({ sessionId: sessionId }));
+      };
+      ws.onmessage = function (event) {
+        const message = JSON.parse(event.data);
+        if (message.type === 'refreshPreview') {
+          const scrollOffset = window.scrollY;
+          ws.send(JSON.stringify({ type: 'scrollOffset', value: scrollOffset }));
+          location.reload();
+        } else if (message.type === 'restoreScroll') {
+          const setScrollPosition = () => {
+            window.scrollTo(0, message.scrollOffset);
+          };
+          if (document.readyState === 'complete') {
+            setScrollPosition();
+          } else {
+            window.addEventListener('load', setScrollPosition);
+            const images = document.querySelectorAll('img');
+            let loadedImages = 0;
+            images.forEach(img => {
+              if (img.complete) {
+                loadedImages++;
+              } else {
+                img.addEventListener('load', () => {
+                  loadedImages++;
+                  if (loadedImages === images.length) {
+                    setScrollPosition();
+                  }
+                });
+              }
+            });
+          }
+        }
+      };
+
+      document.querySelectorAll('[data-source-map]')
+        .forEach(element => {
+          element.addEventListener('click', () => document.querySelector('.xref-highlight')?.classList.remove('xref-highlight'));
+          element.addEventListener('dblclick', () => {
+            const text = element.getAttribute('data-source-map');
+            ws.send(JSON.stringify({ type: 'findInEditor', value: text }));
+            element.classList.add('xref-highlight');
+          });
+        });
+    };
+  </script>
+</head>
+
+<body onload="listenForUpdates();printAndClose(false);">
+  <h3 class="filepath">~/Library/Application Support/Code/User/globalStorage/pawelhuryn.grok-vscode-phuryn/plan-reviews/01a07c42-fd2b-7432-bdea-8e7f43b89ffd/bank-statement-app-import-schema-summary-transaction-pages-6c923b91.md</h3>
+  <div>
+    <h1 data-source-map="IyBCYW5rIFN0YXRlbWVudCBBcHAg4oCUIEltcG9ydCwgU2NoZW1hLCBTdW1tYXJ5ICYgVHJhbnNhY3Rpb24gUGFnZXMKCg==">Bank Statement App — Import, Schema, Summary &amp; Transaction Pages</h1>
+<h2 data-source-map="IyMgR29hbAoK">Goal</h2>
+<p data-source-map="VHVybiB0aGlzIG5lYXItZ3JlZW5maWVsZCBSYWlscyA4LjEgYXBwIGludG8gYSBob3N0IGZvciBCYW5rIG9mIEFtZXJpY2EgKipiYW5rIGFjY291bnQgc3RhdGVtZW50cyoqIGFuZCAqKmNyZWRpdC1jYXJkIHllYXItZW5kIHN0YXRlbWVudHMqKiwgdXNpbmcgdGhlIGV4aXN0aW5nIHBhdGggZ2Vtczo=">Turn this near-greenfield Rails 8.1 app into a host for Bank of America <strong>bank account statements</strong> and <strong>credit-card year-end statements</strong>, using the existing path gems:</p>
+<ul>
+<li data-source-map="LSBgQmFua0FjY291bnRTdGF0ZW1lbnRgIChgRXh0cmFjdG9yYCAvIGBDU1ZFeHRyYWN0b3JgKQo="><code>BankAccountStatement</code> (<code>Extractor</code> / <code>CSVExtractor</code>)</li>
+<li data-source-map="LSBgQ0NZZWFyRW5kU3RhdGVtZW50YCAoYEV4dHJhY3RvcmAgLyBgQ1NWRXh0cmFjdG9yYCk="><code>CCYearEndStatement</code> (<code>Extractor</code> / <code>CSVExtractor</code>)</li>
+</ul>
+<p data-source-map="RGVjaXNpb25zIGxvY2tlZCBpbjo=">Decisions locked in:</p>
+<ul>
+<li data-source-map="LSAqKlNlcGFyYXRlIG1vZGVscyArIHBhZ2VzKiogZm9yIGJhbmsgdnMgY3JlZGl0LWNhcmQgKG5vdCBwb2x5bW9ycGhpYy9TVEkpCg=="><strong>Separate models + pages</strong> for bank vs credit-card (not polymorphic/STI)</li>
+<li data-source-map="LSAqKlVwbG9hZCBVSSArIGltcG9ydCBzZXJ2aWNlcyoqIChBY3RpdmUgU3RvcmFnZSBmaWxlIOKGkiBnZW0gZXh0cmFjdG9yIOKGkiBwZXJzaXN0ZWQgcm93cykK"><strong>Upload UI + import services</strong> (Active Storage file → gem extractor → persisted rows)</li>
+<li data-source-map="LSAqKkxvb2thaGVhZCBmaWx0ZXJpbmcqKiA9IGxpdmUgcGFydGlhbC1tYXRjaCBmaWx0ZXIgYXMgeW91IHR5cGUgKGRlYm91bmNlZCBUdXJibyBGcmFtZSByZWZyZXNoOyBubyBhdXRvY29tcGxldGUgZHJvcGRvd24p"><strong>Lookahead filtering</strong> = live partial-match filter as you type (debounced Turbo Frame refresh; no autocomplete dropdown)</li>
+</ul>
+<h2 data-source-map="IyMgQ3VycmVudCBzdGF0ZQoK">Current state</h2>
+<ul>
+<li data-source-map="LSBSYWlscyBzaGVsbCBvbmx5OiBubyBkb21haW4gbW9kZWxzLCBtaWdyYXRpb25zLCByb3V0ZXMgKGV4Y2VwdCBgL3VwYCksIG9yIGZlYXR1cmUgdmlld3MK">Rails shell only: no domain models, migrations, routes (except <code>/up</code>), or feature views</li>
+<li data-source-map="LSBHZW1zIGFscmVhZHkgaW4gYEdlbWZpbGVgOyBwYXJzaW5nIG11c3Qgc3RheSBpbiBnZW1zCg==">Gems already in <code>Gemfile</code>; parsing must stay in gems</li>
+<li data-source-map="LSBFbXB0eSBsZWZ0b3ZlciBgYXBwL3NlcnZpY2VzL3llYXJfZW5kX3N0YXRlbWVudHMvYAo=">Empty leftover <code>app/services/year_end_statements/</code></li>
+<li data-source-map="LSBVSSBzdGFjazogVGFpbHdpbmQgKyBUdXJibyArIFN0aW11bHVzICsgaW1wb3J0bWFwCg==">UI stack: Tailwind + Turbo + Stimulus + importmap</li>
+<li data-source-map="LSBTYW1wbGUgZmlsZXMgYXZhaWxhYmxlIGxvY2FsbHkgdW5kZXIgYC9Vc2Vycy90b2RkL0RvY3VtZW50cy9Cb0FfKmAgZm9yIG1hbnVhbCB2ZXJpZmljYXRpb24gKG5vdCBjb21taXR0ZWQp">Sample files available locally under <code>/Users/todd/Documents/BoA_*</code> for manual verification (not committed)</li>
+</ul>
+<hr>
+<h2 data-source-map="IyMgRGF0YSBtb2RlbAoK">Data model</h2>
+<h3 data-source-map="IyMjIDEuIGBiYW5rX2FjY291bnRfc3RhdGVtZW50c2AKCg==">1. <code>bank_account_statements</code></h3>
+<table>
+<thead>
+<tr data-source-map="fCBDb2x1bW4gfCBUeXBlIHwgTm90ZXMgfA==">
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr data-source-map="fCBgYWNjb3VudF9uYW1lYCB8IHN0cmluZyB8IG51bGxhYmxlIChDU1YgaW1wb3J0cykgfA==">
+<td><code>account_name</code></td>
+<td>string</td>
+<td>nullable (CSV imports)</td>
+</tr>
+<tr data-source-map="fCBgYWNjb3VudF9udW1iZXJgIHwgc3RyaW5nIHwgbnVsbGFibGUgKENTVikgfA==">
+<td><code>account_number</code></td>
+<td>string</td>
+<td>nullable (CSV)</td>
+</tr>
+<tr data-source-map="fCBgcGVyaW9kX3N0YXJ0YCB8IGRhdGUgfCBudWxsYWJsZSAoQ1NWKSB8">
+<td><code>period_start</code></td>
+<td>date</td>
+<td>nullable (CSV)</td>
+</tr>
+<tr data-source-map="fCBgcGVyaW9kX2VuZGAgfCBkYXRlIHwgbnVsbGFibGUgKENTVikgfA==">
+<td><code>period_end</code></td>
+<td>date</td>
+<td>nullable (CSV)</td>
+</tr>
+<tr data-source-map="fCBgcGFnZV9jb3VudGAgfCBpbnRlZ2VyIHwgbnVsbGFibGUgKENTVikgfA==">
+<td><code>page_count</code></td>
+<td>integer</td>
+<td>nullable (CSV)</td>
+</tr>
+<tr data-source-map="fCBgYmVnaW5uaW5nX2JhbGFuY2VgIHwgZGVjaW1hbCgxMiwyKSB8IGZyb20gU3VtbWFyeTsgbnVsbGFibGUgfA==">
+<td><code>beginning_balance</code></td>
+<td>decimal(12,2)</td>
+<td>from Summary; nullable</td>
+</tr>
+<tr data-source-map="fCBgZGVwb3NpdHNgIHwgZGVjaW1hbCgxMiwyKSB8IG51bGxhYmxlIHw=">
+<td><code>deposits</code></td>
+<td>decimal(12,2)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgd2l0aGRyYXdhbHNgIHwgZGVjaW1hbCgxMiwyKSB8IG51bGxhYmxlIHw=">
+<td><code>withdrawals</code></td>
+<td>decimal(12,2)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgY2hlY2tzYCB8IGRlY2ltYWwoMTIsMikgfCBudWxsYWJsZSB8">
+<td><code>checks</code></td>
+<td>decimal(12,2)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgc2VydmljZV9mZWVzYCB8IGRlY2ltYWwoMTIsMikgfCBudWxsYWJsZSB8">
+<td><code>service_fees</code></td>
+<td>decimal(12,2)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgZW5kaW5nX2JhbGFuY2VgIHwgZGVjaW1hbCgxMiwyKSB8IG51bGxhYmxlIHw=">
+<td><code>ending_balance</code></td>
+<td>decimal(12,2)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgYXB5X2Vhcm5lZGAgfCBkZWNpbWFsKDgsNCkgfCBudWxsYWJsZSB8">
+<td><code>apy_earned</code></td>
+<td>decimal(8,4)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgaW50ZXJlc3RfcGFpZF95dGRgIHwgZGVjaW1hbCgxMiwyKSB8IG51bGxhYmxlIHw=">
+<td><code>interest_paid_ytd</code></td>
+<td>decimal(12,2)</td>
+<td>nullable</td>
+</tr>
+<tr data-source-map="fCBgc291cmNlX2ZpbGVuYW1lYCB8IHN0cmluZyB8IG9yaWdpbmFsIHVwbG9hZCBiYXNlbmFtZSB8">
+<td><code>source_filename</code></td>
+<td>string</td>
+<td>original upload basename</td>
+</tr>
+<tr data-source-map="fCBgaW1wb3J0X2Zvcm1hdGAgfCBzdHJpbmcgfCBgcGRmYCBvciBgY3N2YCB8">
+<td><code>import_format</code></td>
+<td>string</td>
+<td><code>pdf</code> or <code>csv</code></td>
+</tr>
+<tr data-source-map="fCB0aW1lc3RhbXBzIHwgfCB8">
+<td>timestamps</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li data-source-map="LSBgaGFzX29uZV9hdHRhY2hlZCA6c291cmNlX2ZpbGVgCg=="><code>has_one_attached :source_file</code></li>
+<li data-source-map="LSBgaGFzX21hbnkgOmJhbmtfYWNjb3VudF90cmFuc2FjdGlvbnMsIGRlcGVuZGVudDogOmRlc3Ryb3lg"><code>has_many :bank_account_transactions, dependent: :destroy</code></li>
+</ul>
+<p data-source-map="SW5kZXhlczogYFtwZXJpb2Rfc3RhcnQsIHBlcmlvZF9lbmRdYCwgYGFjY291bnRfbnVtYmVyYA==">Indexes: <code>[period_start, period_end]</code>, <code>account_number</code></p>
+<h3 data-source-map="IyMjIDIuIGBiYW5rX2FjY291bnRfdHJhbnNhY3Rpb25zYAoK">2. <code>bank_account_transactions</code></h3>
+<table>
+<thead>
+<tr data-source-map="fCBDb2x1bW4gfCBUeXBlIHwgTm90ZXMgfA==">
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr data-source-map="fCBgYmFua19hY2NvdW50X3N0YXRlbWVudF9pZGAgfCBmayB8IHJlcXVpcmVkIHw=">
+<td><code>bank_account_statement_id</code></td>
+<td>fk</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgZGF0ZWAgfCBkYXRlIHwgcmVxdWlyZWQgfA==">
+<td><code>date</code></td>
+<td>date</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgZGVzY3JpcHRpb25gIHwgdGV4dCB8IHJlcXVpcmVkIHw=">
+<td><code>description</code></td>
+<td>text</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgYW1vdW50YCB8IGRlY2ltYWwoMTIsMikgfCBzaWduZWQ7IHJlcXVpcmVkIHw=">
+<td><code>amount</code></td>
+<td>decimal(12,2)</td>
+<td>signed; required</td>
+</tr>
+<tr data-source-map="fCBgc2VjdGlvbmAgfCBzdHJpbmcgfCBlLmcuIERlcG9zaXRzIC8gV2l0aGRyYXdhbHM7IHJlcXVpcmVkIHw=">
+<td><code>section</code></td>
+<td>string</td>
+<td>e.g. Deposits / Withdrawals; required</td>
+</tr>
+<tr data-source-map="fCB0aW1lc3RhbXBzIHwgfCB8">
+<td>timestamps</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p data-source-map="SW5kZXhlczogYGRhdGVgLCBgc2VjdGlvbmAsIGBkZXNjcmlwdGlvbmAgKGZvciBMSUtFKSwgY29tcG9zaXRlIHVzZWZ1bCBmb3IgZmlsdGVycw==">Indexes: <code>date</code>, <code>section</code>, <code>description</code> (for LIKE), composite useful for filters</p>
+<h3 data-source-map="IyMjIDMuIGBjcmVkaXRfY2FyZF9zdGF0ZW1lbnRzYAoK">3. <code>credit_card_statements</code></h3>
+<table>
+<thead>
+<tr data-source-map="fCBDb2x1bW4gfCBUeXBlIHwgTm90ZXMgfA==">
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr data-source-map="fCBgc3RhdGVtZW50X3llYXJgIHwgaW50ZWdlciB8IGRlcml2ZWQgZnJvbSBlYXJsaWVzdC9sYXRlc3QgdHhuIHllYXIgb3IgZmlsZW5hbWU7IG51bGxhYmxlIGlmIGVtcHR5IHw=">
+<td><code>statement_year</code></td>
+<td>integer</td>
+<td>derived from earliest/latest txn year or filename; nullable if empty</td>
+</tr>
+<tr data-source-map="fCBgcGFnZV9jb3VudGAgfCBpbnRlZ2VyIHwgbnVsbGFibGUgKENTVikgfA==">
+<td><code>page_count</code></td>
+<td>integer</td>
+<td>nullable (CSV)</td>
+</tr>
+<tr data-source-map="fCBgc291cmNlX2ZpbGVuYW1lYCB8IHN0cmluZyB8IHw=">
+<td><code>source_filename</code></td>
+<td>string</td>
+<td></td>
+</tr>
+<tr data-source-map="fCBgaW1wb3J0X2Zvcm1hdGAgfCBzdHJpbmcgfCBgcGRmYCBvciBgY3N2YCB8">
+<td><code>import_format</code></td>
+<td>string</td>
+<td><code>pdf</code> or <code>csv</code></td>
+</tr>
+<tr data-source-map="fCBgdG90YWxfc3BlbmRgIHwgZGVjaW1hbCgxMiwyKSB8IHN1bSBvZiBjYXRlZ29yeSB0b3RhbHMgKG9yIHR4bnMpIGF0IGltcG9ydCB8">
+<td><code>total_spend</code></td>
+<td>decimal(12,2)</td>
+<td>sum of category totals (or txns) at import</td>
+</tr>
+<tr data-source-map="fCB0aW1lc3RhbXBzIHwgfCB8">
+<td>timestamps</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li data-source-map="LSBgaGFzX29uZV9hdHRhY2hlZCA6c291cmNlX2ZpbGVgCg=="><code>has_one_attached :source_file</code></li>
+<li data-source-map="LSBgaGFzX21hbnkgOmNyZWRpdF9jYXJkX3RyYW5zYWN0aW9ucywgZGVwZW5kZW50OiA6ZGVzdHJveWA="><code>has_many :credit_card_transactions, dependent: :destroy</code></li>
+</ul>
+<p data-source-map="SW5kZXg6IGBzdGF0ZW1lbnRfeWVhcmA=">Index: <code>statement_year</code></p>
+<h3 data-source-map="IyMjIDQuIGBjcmVkaXRfY2FyZF90cmFuc2FjdGlvbnNgCgo=">4. <code>credit_card_transactions</code></h3>
+<table>
+<thead>
+<tr data-source-map="fCBDb2x1bW4gfCBUeXBlIHwgTm90ZXMgfA==">
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr data-source-map="fCBgY3JlZGl0X2NhcmRfc3RhdGVtZW50X2lkYCB8IGZrIHwgcmVxdWlyZWQgfA==">
+<td><code>credit_card_statement_id</code></td>
+<td>fk</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgZGF0ZWAgfCBkYXRlIHwgcmVxdWlyZWQgfA==">
+<td><code>date</code></td>
+<td>date</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgZGVzY3JpcHRpb25gIHwgdGV4dCB8IHJlcXVpcmVkIHw=">
+<td><code>description</code></td>
+<td>text</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgbG9jYXRpb25gIHwgc3RyaW5nIHwgcmVxdWlyZWQgZnJvbSBnZW0gKGNhbiBiZSBibGFuayBzdHJpbmcpIHw=">
+<td><code>location</code></td>
+<td>string</td>
+<td>required from gem (can be blank string)</td>
+</tr>
+<tr data-source-map="fCBgYW1vdW50YCB8IGRlY2ltYWwoMTIsMikgfCBzaWduZWQ7IGNyZWRpdHMgbmVnYXRpdmUgfA==">
+<td><code>amount</code></td>
+<td>decimal(12,2)</td>
+<td>signed; credits negative</td>
+</tr>
+<tr data-source-map="fCBgY2F0ZWdvcnlgIHwgc3RyaW5nIHwgcmVxdWlyZWQgfA==">
+<td><code>category</code></td>
+<td>string</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCBgc3ViY2F0ZWdvcnlgIHwgc3RyaW5nIHwgcmVxdWlyZWQgfA==">
+<td><code>subcategory</code></td>
+<td>string</td>
+<td>required</td>
+</tr>
+<tr data-source-map="fCB0aW1lc3RhbXBzIHwgfCB8">
+<td>timestamps</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p data-source-map="SW5kZXhlczogYGRhdGVgLCBgY2F0ZWdvcnlgLCBgc3ViY2F0ZWdvcnlgLCBgZGVzY3JpcHRpb25g">Indexes: <code>date</code>, <code>category</code>, <code>subcategory</code>, <code>description</code></p>
+<p data-source-map="KipXaHkgZGVub3JtYWxpemUgc2VjdGlvbi9jYXRlZ29yeS9zdWJjYXRlZ29yeSBvbnRvIHRyYW5zYWN0aW9uczoqKiBtYXRjaGVzIGdlbSBmbGF0IGAjdHJhbnNhY3Rpb25zYCBzaGFwZSwgc2ltcGxpZmllcyBmaWx0ZXJpbmcgYW5kIHN1bW1hcnkgcm9sbHVwcyB3aXRob3V0IGEgZ3JvdXBzIHRhYmxlLiBDYXRlZ29yeS9zZWN0aW9uIHRvdGFscyBmb3Igc3VtbWFyeSBwYWdlcyBjYW4gYmUgY29tcHV0ZWQgd2l0aCBgR1JPVVAgQllgIG9yIGNhY2hlZCBvbiB0aGUgc3RhdGVtZW50IGF0IGltcG9ydCBpZiBuZWVkZWQu"><strong>Why denormalize section/category/subcategory onto transactions:</strong> matches gem flat <code>#transactions</code> shape, simplifies filtering and summary rollups without a groups table. Category/section totals for summary pages can be computed with <code>GROUP BY</code> or cached on the statement at import if needed.</p>
+<p data-source-map="KipNb25leToqKiB1c2UgYGRlY2ltYWxgLCBuZXZlciBmbG9hdC4gTWFwIGdlbSBgQmlnRGVjaW1hbGAgd2l0aCBgLnRvX2RgIC8gc3RvcmUgYXMtaXMu"><strong>Money:</strong> use <code>decimal</code>, never float. Map gem <code>BigDecimal</code> with <code>.to_d</code> / store as-is.</p>
+<hr>
+<h2 data-source-map="IyMgSW1wb3J0IGZsb3cKCg==">Import flow</h2>
+<pre data-source-map="YGBgClVwbG9hZCBmb3JtICh0eXBlICsgUERGL0NTVikKICDihpIgQWN0aXZlIFN0b3JhZ2UgYXR0YWNoCiAg4oaSIEltcG9ydGVyIHNlcnZpY2UKICAgICAg4oaSIGNob29zZSBFeHRyYWN0b3IgdnMgQ1NWRXh0cmFjdG9yIGJ5IGV4dGVuc2lvbgogICAgICDihpIgcGVyc2lzdCBzdGF0ZW1lbnQgKyB0cmFuc2FjdGlvbnMgaW4gb25lIHRyYW5zYWN0aW9uCiAg4oaSIHJlZGlyZWN0IHRvIHN0YXRlbWVudCBzdW1tYXJ5CmBgYA=="><code>Upload form (type + PDF/CSV)
+  → Active Storage attach
+  → Importer service
+      → choose Extractor vs CSVExtractor by extension
+      → persist statement + transactions in one transaction
+  → redirect to statement summary</code></pre>
+<h3 data-source-map="IyMjIFNlcnZpY2VzCgo=">Services</h3>
+<ul>
+<li data-source-map="LSBgQmFua0FjY291bnRTdGF0ZW1lbnRzOjpJbXBvcnRlci5jYWxsKHVwbG9hZGVkX2ZpbGU6KWAKICAtIGAucGRmYCDihpIgYEJhbmtBY2NvdW50U3RhdGVtZW50OjpFeHRyYWN0b3JgCiAgLSBgLmNzdmAg4oaSIGBCYW5rQWNjb3VudFN0YXRlbWVudDo6Q1NWRXh0cmFjdG9yYAogIC0gQ3JlYXRlcyBgQmFua0FjY291bnRTdGF0ZW1lbnRgICsgYnVsay1pbnNlcnRzIHRyYW5zYWN0aW9ucyBmcm9tIGByZXN1bHQudHJhbnNhY3Rpb25zYAogIC0gQ29waWVzIHN1bW1hcnkgZmllbGRzIHdoZW4gcHJlc2VudCAoUERGIG9ubHkpCgo="><p><code>BankAccountStatements::Importer.call(uploaded_file:)</code></p>
+<ul>
+<li><code>.pdf</code> → <code>BankAccountStatement::Extractor</code></li>
+<li><code>.csv</code> → <code>BankAccountStatement::CSVExtractor</code></li>
+<li>Creates <code>BankAccountStatement</code> + bulk-inserts transactions from <code>result.transactions</code></li>
+<li>Copies summary fields when present (PDF only)</li>
+</ul>
+</li>
+<li data-source-map="LSBgQ3JlZGl0Q2FyZFN0YXRlbWVudHM6OkltcG9ydGVyLmNhbGwodXBsb2FkZWRfZmlsZTopYAogIC0gYC5wZGZgIOKGkiBgQ0NZZWFyRW5kU3RhdGVtZW50OjpFeHRyYWN0b3JgCiAgLSBgLmNzdmAg4oaSIGBDQ1llYXJFbmRTdGF0ZW1lbnQ6OkNTVkV4dHJhY3RvcmAKICAtIENyZWF0ZXMgYENyZWRpdENhcmRTdGF0ZW1lbnRgICsgdHJhbnNhY3Rpb25zCiAgLSBTZXRzIGBzdGF0ZW1lbnRfeWVhcmAgZnJvbSBgdHJhbnNhY3Rpb25zLm1hcCgmOmRhdGUpLm1hcCgmOnllYXIpLm1pbm1heGAgKHByZWZlciBzaW5nbGUgeWVhcjsgaWYgc3BhbiwgdXNlIG1heCB5ZWFyIG9yIG1vZGUg4oCUIGRvY3VtZW50IGFzIOKAnHllYXIgb2YgbGF0ZXN0IHRyYW5zYWN0aW9u4oCdKQogIC0gU2V0cyBgdG90YWxfc3BlbmRgIGZyb20gc3VtIG9mIGNhdGVnb3J5IHRvdGFscyAob3IgdHhuIGFtb3VudHMp"><p><code>CreditCardStatements::Importer.call(uploaded_file:)</code></p>
+<ul>
+<li><code>.pdf</code> → <code>CCYearEndStatement::Extractor</code></li>
+<li><code>.csv</code> → <code>CCYearEndStatement::CSVExtractor</code></li>
+<li>Creates <code>CreditCardStatement</code> + transactions</li>
+<li>Sets <code>statement_year</code> from <code>transactions.map(&amp;:date).map(&amp;:year).minmax</code> (prefer single year; if span, use max year or mode — document as “year of latest transaction”)</li>
+<li>Sets <code>total_spend</code> from sum of category totals (or txn amounts)</li>
+</ul>
+</li>
+</ul>
+<p data-source-map="Qm90aCBpbXBvcnRlcnM6">Both importers:</p>
+<ul>
+<li data-source-map="LSBTYXZlIHRlbXBmaWxlIGZyb20gQWN0aXZlIFN0b3JhZ2UgYmxvYiBmb3IgZ2VtIGBmaWxlbmFtZTpgCg==">Save tempfile from Active Storage blob for gem <code>filename:</code></li>
+<li data-source-map="LSBTZXQgYGltcG9ydF9mb3JtYXRgLCBgc291cmNlX2ZpbGVuYW1lYAo=">Set <code>import_format</code>, <code>source_filename</code></li>
+<li data-source-map="LSBSYWlzZSAvIHJlc2N1ZSB3aXRoIGZsYXNoLWZyaWVuZGx5IGVycm9ycyAoYEFyZ3VtZW50RXJyb3JgLCBgRXJybm86OkVOT0VOVGAsIHVuc3VwcG9ydGVkIGV4dGVuc2lvbikK">Raise / rescue with flash-friendly errors (<code>ArgumentError</code>, <code>Errno::ENOENT</code>, unsupported extension)</li>
+<li data-source-map="LSBSZW1vdmUgZW1wdHkgbGVmdG92ZXIgYGFwcC9zZXJ2aWNlcy95ZWFyX2VuZF9zdGF0ZW1lbnRzL2A=">Remove empty leftover <code>app/services/year_end_statements/</code></li>
+</ul>
+<p data-source-map="QWN0aXZlIFN0b3JhZ2U6IHJ1biBgYmluL3JhaWxzIGFjdGl2ZV9zdG9yYWdlOmluc3RhbGxgIGlmIHRhYmxlcyBtaXNzaW5nLCB0aGVuIG1pZ3JhdGUu">Active Storage: run <code>bin/rails active_storage:install</code> if tables missing, then migrate.</p>
+<hr>
+<h2 data-source-map="IyMgUm91dGVzICYgcGFnZXMKCg==">Routes &amp; pages</h2>
+<pre class="code-box">
+<code class="hljs">
+root <span class="hljs-string">&quot;home#index&quot;</span>
+
+resources <span class="hljs-symbol">:bank_account_statements</span>, <span class="hljs-symbol">only:</span> %i[index show new create destroy] <span class="hljs-keyword">do</span>
+  resources <span class="hljs-symbol">:transactions</span>, <span class="hljs-symbol">only:</span> <span class="hljs-symbol">:index</span>, <span class="hljs-symbol">module:</span> <span class="hljs-symbol">:bank_account_statements</span>
+<span class="hljs-keyword">end</span>
+
+resources <span class="hljs-symbol">:credit_card_statements</span>, <span class="hljs-symbol">only:</span> %i[index show new create destroy] <span class="hljs-keyword">do</span>
+  resources <span class="hljs-symbol">:transactions</span>, <span class="hljs-symbol">only:</span> <span class="hljs-symbol">:index</span>, <span class="hljs-symbol">module:</span> <span class="hljs-symbol">:credit_card_statements</span>
+<span class="hljs-keyword">end</span>
+</code>
+</pre>
+<p data-source-map="T3B0aW9uYWwgY29udmVuaWVuY2U6IHRvcC1sZXZlbCBgR0VUIC9iYW5rX2FjY291bnRfdHJhbnNhY3Rpb25zYCBhbmQgYEdFVCAvY3JlZGl0X2NhcmRfdHJhbnNhY3Rpb25zYCBmb3IgY3Jvc3Mtc3RhdGVtZW50IGJyb3dzaW5nIHdpdGggdGhlIHNhbWUgZmlsdGVycyAobmljZS10by1oYXZlOyBzdGF0ZW1lbnQtc2NvcGVkIHBhZ2VzIGFyZSByZXF1aXJlZCku">Optional convenience: top-level <code>GET /bank_account_transactions</code> and <code>GET /credit_card_transactions</code> for cross-statement browsing with the same filters (nice-to-have; statement-scoped pages are required).</p>
+<h3 data-source-map="IyMjIEhvbWUgLyBuYXYKCg==">Home / nav</h3>
+<ul>
+<li data-source-map="LSBTaW1wbGUgbGFuZGluZyB3aXRoIGxpbmtzOiBCYW5rIFN0YXRlbWVudHMgfCBDcmVkaXQgQ2FyZCBTdGF0ZW1lbnRzCg==">Simple landing with links: Bank Statements | Credit Card Statements</li>
+<li data-source-map="LSBTaGFyZWQgbmF2IGluIGxheW91dCAocmVwbGFjZSBiYXJlIGBjb250YWluZXJgIGZsZXggd2l0aCBhIHNtYWxsIGhlYWRlciArIGZsYXNoKQ==">Shared nav in layout (replace bare <code>container</code> flex with a small header + flash)</li>
+</ul>
+<h3 data-source-map="IyMjIFN0YXRlbWVudCBzdW1tYXJ5IHBhZ2VzIChgI3Nob3dgKQoK">Statement summary pages (<code>#show</code>)</h3>
+<p data-source-map="KipCYW5rIGFjY291bnQgc3VtbWFyeSoq"><strong>Bank account summary</strong></p>
+<ul>
+<li data-source-map="LSBBY2NvdW50IG5hbWUvbnVtYmVyLCBwZXJpb2QsIGltcG9ydCBmb3JtYXQK">Account name/number, period, import format</li>
+<li data-source-map="LSBCYWxhbmNlIHN1bW1hcnkgdGFibGUgKGJlZ2lubmluZywgZGVwb3NpdHMsIHdpdGhkcmF3YWxzLCBjaGVja3MsIGZlZXMsIGVuZGluZywgQVBZLCBpbnRlcmVzdCBZVEQpCg==">Balance summary table (beginning, deposits, withdrawals, checks, fees, ending, APY, interest YTD)</li>
+<li data-source-map="LSBTZWN0aW9uIHRvdGFscyAoR1JPVVAgQlkgYHNlY3Rpb25gKQo=">Section totals (GROUP BY <code>section</code>)</li>
+<li data-source-map="LSBMaW5rIHRvIOKAnFZpZXcgdHJhbnNhY3Rpb25z4oCdCg==">Link to “View transactions”</li>
+<li data-source-map="LSBEZXN0cm95IC8gcmUtaW1wb3J0IG5vdCByZXF1aXJlZCBiZXlvbmQgZGVzdHJveQ==">Destroy / re-import not required beyond destroy</li>
+</ul>
+<p data-source-map="KipDcmVkaXQgY2FyZCBzdW1tYXJ5Kio="><strong>Credit card summary</strong></p>
+<ul>
+<li data-source-map="LSBTdGF0ZW1lbnQgeWVhciwgZmlsZW5hbWUsIHBhZ2UgY291bnQsIHRvdGFsIHNwZW5kCg==">Statement year, filename, page count, total spend</li>
+<li data-source-map="LSBDYXRlZ29yeSB0b3RhbHMgdGFibGU7IGV4cGFuZGFibGUgb3IgbmVzdGVkIHN1YmNhdGVnb3J5IHRvdGFscyAoYEdST1VQIEJZIGNhdGVnb3J5LCBzdWJjYXRlZ29yeWApCg==">Category totals table; expandable or nested subcategory totals (<code>GROUP BY category, subcategory</code>)</li>
+<li data-source-map="LSBMaW5rIHRvIHRyYW5zYWN0aW9ucw==">Link to transactions</li>
+</ul>
+<h3 data-source-map="IyMjIFN0YXRlbWVudCBpbmRleCArIHVwbG9hZCAoYCNpbmRleGAsIGAjbmV3YC9gI2NyZWF0ZWApCgo=">Statement index + upload (<code>#index</code>, <code>#new</code>/<code>#create</code>)</h3>
+<ul>
+<li data-source-map="LSBMaXN0IHN0YXRlbWVudHMgd2l0aCBrZXkgbWV0YWRhdGEgYW5kIGxpbmsgdG8gc2hvdwo=">List statements with key metadata and link to show</li>
+<li data-source-map="LSBVcGxvYWQgZm9ybTogZmlsZSBmaWVsZCBhY2NlcHRpbmcgYC5wZGYsLmNzdmA7IGNyZWF0ZSBwb3N0cyB0byBpbXBvcnRlcg==">Upload form: file field accepting <code>.pdf,.csv</code>; create posts to importer</li>
+</ul>
+<h3 data-source-map="IyMjIFRyYW5zYWN0aW9uIHBhZ2VzIChgI2luZGV4YCkKCg==">Transaction pages (<code>#index</code>)</h3>
+<p data-source-map="RmlsdGVycyByZXF1aXJlZDo=">Filters required:</p>
+<table>
+<thead>
+<tr data-source-map="fCBGaWx0ZXIgfCBCZWhhdmlvciB8">
+<th>Filter</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr data-source-map="fCBEYXRlIGZyb20gLyB0byB8IGV4YWN0IHJhbmdlIG9uIGBkYXRlYCB8">
+<td>Date from / to</td>
+<td>exact range on <code>date</code></td>
+</tr>
+<tr data-source-map="fCBUeXBlIHwgYmFuazogYHNlY3Rpb25gIHNlbGVjdDsgQ0M6IGBjYXRlZ29yeWAgc2VsZWN0IChhbmQgb3B0aW9uYWxseSBzdWJjYXRlZ29yeSkgfA==">
+<td>Type</td>
+<td>bank: <code>section</code> select; CC: <code>category</code> select (and optionally subcategory)</td>
+</tr>
+<tr data-source-map="fCBEZXNjcmlwdGlvbiB8ICoqbGl2ZSBwYXJ0aWFsIG1hdGNoKiogKGBJTElLRSAlcXVlcnklYCAvIFNRTGl0ZSBgTElLRWApIHw=">
+<td>Description</td>
+<td><strong>live partial match</strong> (<code>ILIKE %query%</code> / SQLite <code>LIKE</code>)</td>
+</tr>
+<tr data-source-map="fCBBbW91bnQgfCAqKmxpdmUgcGFydGlhbCBtYXRjaCoqIG9uIHN0cmluZyBmb3JtIG9mIGFtb3VudCAoZS5nLiB0eXBpbmcgYDEyLjNgIG1hdGNoZXMgYDEyLjM0YCwgYC0xMi4zMGApIHw=">
+<td>Amount</td>
+<td><strong>live partial match</strong> on string form of amount (e.g. typing <code>12.3</code> matches <code>12.34</code>, <code>-12.30</code>)</td>
+</tr>
+</tbody></table>
+<p data-source-map="KipMb29rYWhlYWQgaW1wbGVtZW50YXRpb24gKFN0aW11bHVzICsgVHVyYm8pOioq"><strong>Lookahead implementation (Stimulus + Turbo):</strong></p>
+<ul>
+<li data-source-map="LSBGaWx0ZXIgZm9ybSB3cmFwcGVkIGluIFR1cmJvIEZyYW1lIGB0cmFuc2FjdGlvbnNgCg==">Filter form wrapped in Turbo Frame <code>transactions</code></li>
+<li data-source-map="LSBTdGltdWx1cyBjb250cm9sbGVyIGBsaXZlLWZpbHRlcmA6CiAgLSBPbiBgaW5wdXRgIGZvciBkZXNjcmlwdGlvbi9hbW91bnQ6IGRlYm91bmNlIH4yMDDigJMzMDBtcywgdGhlbiBgZm9ybS5yZXF1ZXN0U3VibWl0KClgCiAgLSBPbiBgY2hhbmdlYCBmb3IgZGF0ZS90eXBlOiBzdWJtaXQgaW1tZWRpYXRlbHkK">Stimulus controller <code>live-filter</code>:<ul>
+<li>On <code>input</code> for description/amount: debounce ~200–300ms, then <code>form.requestSubmit()</code></li>
+<li>On <code>change</code> for date/type: submit immediately</li>
+</ul>
+</li>
+<li data-source-map="LSBDb250cm9sbGVyIHJlc3BvbmRzIHdpdGggVHVyYm8gRnJhbWUgSFRNTCBvZiB0aGUgZmlsdGVyZWQgdGFibGUK">Controller responds with Turbo Frame HTML of the filtered table</li>
+<li data-source-map="LSBVc2UgYEdFVGAgcXVlcnkgcGFyYW1zIHNvIGZpbHRlcnMgYXJlIGJvb2ttYXJrYWJsZQo=">Use <code>GET</code> query params so filters are bookmarkable</li>
+<li data-source-map="LSBBbW91bnQgZmlsdGVyOiBjb21wYXJlIGFnYWluc3QgYENBU1QoYW1vdW50IEFTIFRFWFQpYCBvciBgcHJpbnRmYC9ub3JtYWxpemVkIHN0cmluZyBjb250YWluaW5nIHRoZSB0eXBlZCBkaWdpdHMg4oCUIGtlZXAgc2ltcGxlOiBgV0hFUkUgQ0FTVChhbW91bnQgQVMgVEVYVCkgTElLRSA6cWAgYWZ0ZXIgbm9ybWFsaXppbmcgdXNlciBpbnB1dCAoc3RyaXAgYCRgLCBjb21tYXMp">Amount filter: compare against <code>CAST(amount AS TEXT)</code> or <code>printf</code>/normalized string containing the typed digits — keep simple: <code>WHERE CAST(amount AS TEXT) LIKE :q</code> after normalizing user input (strip <code>$</code>, commas)</li>
+</ul>
+<p data-source-map="QWxzbyBzaG93IHJlc3VsdCBjb3VudCBhbmQgY2xlYXItZmlsdGVycyBsaW5rLg==">Also show result count and clear-filters link.</p>
+<hr>
+<h2 data-source-map="IyMgVUkgY29udmVudGlvbnMKCg==">UI conventions</h2>
+<ul>
+<li data-source-map="LSBUYWlsd2luZCB1dGlsaXR5IGNsYXNzZXM7IHJlYWRhYmxlIHRhYmxlcyB3aXRoIHplYnJhL2hvdmVyCg==">Tailwind utility classes; readable tables with zebra/hover</li>
+<li data-source-map="LSBGbGFzaCBtZXNzYWdlcyBmb3IgaW1wb3J0IHN1Y2Nlc3MvZmFpbHVyZQo=">Flash messages for import success/failure</li>
+<li data-source-map="LSBNb25leSBoZWxwZXI6IGBudW1iZXJfdG9fY3VycmVuY3lgIChoYW5kbGUgbmVnYXRpdmVzKQo=">Money helper: <code>number_to_currency</code> (handle negatives)</li>
+<li data-source-map="LSBEYXRlIGhlbHBlcjogYGwoZGF0ZSwgZm9ybWF0OiA6ZGVmYXVsdClgCg==">Date helper: <code>l(date, format: :default)</code></li>
+<li data-source-map="LSBLZWVwIGxheW91dCBtb2JpbGUtZnJpZW5kbHkgKHN0YWNrIGZpbHRlcnMgb24gc21hbGwgc2NyZWVucykg4oCUIHZlcmlmeSBkZXNrdG9wICsgbW9iaWxlIHZpZXdwb3J0cyBpbiBicm93c2Vy">Keep layout mobile-friendly (stack filters on small screens) — verify desktop + mobile viewports in browser</li>
+</ul>
+<hr>
+<h2 data-source-map="IyMgVGVzdGluZyAoTWluaXRlc3QpCgo=">Testing (Minitest)</h2>
+<ol>
+<li data-source-map="MS4gKipNb2RlbCoqIHZhbGlkYXRpb25zIC8gYXNzb2NpYXRpb25zCg=="><strong>Model</strong> validations / associations</li>
+<li data-source-map="Mi4gKipJbXBvcnRlcioqIHVuaXQgdGVzdHMgd2l0aCB0bXBkaXIgQ1NWIGZpeHR1cmVzIChpbmxpbmUgcGlwZS1kZWxpbWl0ZWQgY29udGVudCBtYXRjaGluZyBnZW0gd3JpdGVycykg4oCUIG5vIGNvbW1pdHRlZCBQREZzCg=="><strong>Importer</strong> unit tests with tmpdir CSV fixtures (inline pipe-delimited content matching gem writers) — no committed PDFs</li>
+<li data-source-map="My4gKipDb250cm9sbGVyL2ludGVncmF0aW9uKiogdGVzdHM6IGNyZWF0ZSB2aWEgdXBsb2FkLCBzaG93IHN1bW1hcnksIGZpbHRlciB0cmFuc2FjdGlvbnMgYnkgZGF0ZS90eXBlL2Rlc2NyaXB0aW9uL2Ftb3VudAo="><strong>Controller/integration</strong> tests: create via upload, show summary, filter transactions by date/type/description/amount</li>
+<li data-source-map="NC4gT3B0aW9uYWwgc2tpcHBhYmxlIFBERiBzbW9rZSB0ZXN0IGlmIGAvVXNlcnMvdG9kZC9Eb2N1bWVudHMvLi4uYCBleGlzdHMgKG1hdGNoIGV4aXN0aW5nIGdlbSB0ZXN0IHN0eWxlKQ==">Optional skippable PDF smoke test if <code>/Users/todd/Documents/...</code> exists (match existing gem test style)</li>
+</ol>
+<hr>
+<h2 data-source-map="IyMgSW1wbGVtZW50YXRpb24gb3JkZXIKCg==">Implementation order</h2>
+<ol>
+<li data-source-map="MS4gQWN0aXZlIFN0b3JhZ2UgaW5zdGFsbCArIGRvbWFpbiBtaWdyYXRpb25zICsgbW9kZWxzCg==">Active Storage install + domain migrations + models</li>
+<li data-source-map="Mi4gSW1wb3J0ZXIgc2VydmljZXMgKyBtb2RlbCB0ZXN0cyB3aXRoIENTViBmaXh0dXJlcwo=">Importer services + model tests with CSV fixtures</li>
+<li data-source-map="My4gUm91dGVzLCBjb250cm9sbGVycywgc3VtbWFyeSArIHVwbG9hZCB2aWV3cwo=">Routes, controllers, summary + upload views</li>
+<li data-source-map="NC4gVHJhbnNhY3Rpb24gaW5kZXggd2l0aCBmaWx0ZXJzICsgU3RpbXVsdXMgbGl2ZS1maWx0ZXIK">Transaction index with filters + Stimulus live-filter</li>
+<li data-source-map="NS4gTGF5b3V0L25hdiBwb2xpc2gK">Layout/nav polish</li>
+<li data-source-map="Ni4gQnJvd3NlciB2ZXJpZmljYXRpb24gd2l0aCByZWFsIERvY3VtZW50cyBzYW1wbGVzIChiYW5rIFBERi9DU1YgKyBDQyBQREYvQ1NWKQo=">Browser verification with real Documents samples (bank PDF/CSV + CC PDF/CSV)</li>
+<li data-source-map="Ny4gRml4IGFueSBpc3N1ZXMgZm91bmQ7IHJ1biB0ZXN0IHN1aXRl">Fix any issues found; run test suite</li>
+</ol>
+<h2 data-source-map="IyMgT3V0IG9mIHNjb3BlCgo=">Out of scope</h2>
+<ul>
+<li data-source-map="LSBBdXRoIC8gbXVsdGktdXNlcgo=">Auth / multi-user</li>
+<li data-source-map="LSBFZGl0aW5nIGluZGl2aWR1YWwgdHJhbnNhY3Rpb25zCg==">Editing individual transactions</li>
+<li data-source-map="LSBSZWNhdGVnb3JpemF0aW9uCg==">Recategorization</li>
+<li data-source-map="LSBDaGFydHMvZ3JhcGhzIChzdW1tYXJ5IHRhYmxlcyBvbmx5KQo=">Charts/graphs (summary tables only)</li>
+<li data-source-map="LSBHcmFwaGl0ZS9QUnMgdW5sZXNzIGFza2Vk">Graphite/PRs unless asked</li>
+</ul>
+<h2 data-source-map="IyMgS2V5IGZpbGVzIHRvIGFkZAoK">Key files to add</h2>
+<ul>
+<li data-source-map="LSBgZGIvbWlncmF0ZS8qX2NyZWF0ZV9iYW5rX2FjY291bnRfc3RhdGVtZW50cy5yYmAgKCsgdHJhbnNhY3Rpb25zLCBjcmVkaXRfY2FyZF8qKQo="><code>db/migrate/*_create_bank_account_statements.rb</code> (+ transactions, credit_card_*)</li>
+<li data-source-map="LSBgYXBwL21vZGVscy9iYW5rX2FjY291bnRfc3RhdGVtZW50LnJiYCwgYGJhbmtfYWNjb3VudF90cmFuc2FjdGlvbi5yYmAsIGBjcmVkaXRfY2FyZF9zdGF0ZW1lbnQucmJgLCBgY3JlZGl0X2NhcmRfdHJhbnNhY3Rpb24ucmJgCg=="><code>app/models/bank_account_statement.rb</code>, <code>bank_account_transaction.rb</code>, <code>credit_card_statement.rb</code>, <code>credit_card_transaction.rb</code></li>
+<li data-source-map="LSBgYXBwL3NlcnZpY2VzL2JhbmtfYWNjb3VudF9zdGF0ZW1lbnRzL2ltcG9ydGVyLnJiYCwgYGFwcC9zZXJ2aWNlcy9jcmVkaXRfY2FyZF9zdGF0ZW1lbnRzL2ltcG9ydGVyLnJiYAo="><code>app/services/bank_account_statements/importer.rb</code>, <code>app/services/credit_card_statements/importer.rb</code></li>
+<li data-source-map="LSBDb250cm9sbGVycyB1bmRlciBgYXBwL2NvbnRyb2xsZXJzL2AgKCsgbmVzdGVkIHRyYW5zYWN0aW9uIGNvbnRyb2xsZXJzKQo=">Controllers under <code>app/controllers/</code> (+ nested transaction controllers)</li>
+<li data-source-map="LSBWaWV3cyB1bmRlciBgYXBwL3ZpZXdzL2JhbmtfYWNjb3VudF9zdGF0ZW1lbnRzL2AsIGBjcmVkaXRfY2FyZF9zdGF0ZW1lbnRzL2AsIG5lc3RlZCBgdHJhbnNhY3Rpb25zL2AK">Views under <code>app/views/bank_account_statements/</code>, <code>credit_card_statements/</code>, nested <code>transactions/</code></li>
+<li data-source-map="LSBgYXBwL2phdmFzY3JpcHQvY29udHJvbGxlcnMvbGl2ZV9maWx0ZXJfY29udHJvbGxlci5qc2AK"><code>app/javascript/controllers/live_filter_controller.js</code></li>
+<li data-source-map="LSBUZXN0cyB1bmRlciBgdGVzdC9tb2RlbHMvYCwgYHRlc3Qvc2VydmljZXMvYCwgYHRlc3QvY29udHJvbGxlcnMvYCBvciBgdGVzdC9pbnRlZ3JhdGlvbi9g">Tests under <code>test/models/</code>, <code>test/services/</code>, <code>test/controllers/</code> or <code>test/integration/</code></li>
+</ul>
+<script src='bundled/smartquotes.js'></script><script>smartquotes();</script>
+  </div>
+</body>
+
+</html>
