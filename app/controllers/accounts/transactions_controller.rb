@@ -3,8 +3,8 @@
 module Accounts
   class TransactionsController < ApplicationController
     def index
-      @account = AccountSummary.find_by_param!(params[:account_id])
-      base = @account.transactions
+      @account = Account.find(params[:account_id])
+      base = @account.account_transactions
       @total_count = base.count
       filtered = AccountTransaction.apply_filters(base, filter_params)
       @filtered_count = filtered.count
@@ -17,8 +17,6 @@ module Accounts
         .limit(@pagination.limit)
       @sections = base.distinct.order(:section).pluck(:section)
       @filtered = filter_params.values.any?(&:present?)
-    rescue Accounts::Id::Error
-      raise ActiveRecord::RecordNotFound, "Account not found"
     end
 
     private

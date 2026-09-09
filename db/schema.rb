@@ -10,8 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_08_171919) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_09_182525) do
   create_table "account_statements", force: :cascade do |t|
+    t.integer "account_id"
     t.string "account_name"
     t.string "account_number"
     t.decimal "apy_earned", precision: 8, scale: 4
@@ -29,6 +30,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_171919) do
     t.string "source_filename"
     t.datetime "updated_at", null: false
     t.integer "withdrawals_cents"
+    t.index ["account_id"], name: "index_account_statements_on_account_id"
     t.index ["account_number"], name: "index_account_statements_on_account_number"
     t.index ["period_start", "period_end"], name: "index_account_statements_on_period_start_and_period_end"
   end
@@ -47,6 +49,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_171919) do
     t.index ["date"], name: "index_account_transactions_on_date"
     t.index ["description"], name: "index_account_transactions_on_description"
     t.index ["section"], name: "index_account_transactions_on_section"
+  end
+
+  create_table "accounts", force: :cascade do |t|
+    t.string "account_number"
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "name_key", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_number"], name: "index_accounts_on_account_number"
+    t.index ["name_key"], name: "index_accounts_on_name_key", unique: true
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -107,6 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_171919) do
     t.index ["subcategory"], name: "index_credit_card_transactions_on_subcategory"
   end
 
+  add_foreign_key "account_statements", "accounts"
   add_foreign_key "account_transactions", "account_statements"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"

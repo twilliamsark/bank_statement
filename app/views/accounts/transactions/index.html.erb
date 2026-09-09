@@ -3,12 +3,12 @@
 <div class="space-y-6">
   <div>
     <p class="text-sm text-muted">
-      <%= link_to "← Accounts", accounts_path, class: "hover:text-brand-700" %>
+      <%= link_to "← #{@account.name}", account_path(@account), class: "hover:text-brand-700" %>
     </p>
-    <h1 class="page-title mt-2"><%= display_text(@account.account_name) %></h1>
+    <h1 class="page-title mt-2"><%= @account.name %></h1>
     <p class="page-subtitle">
-      <%= @account.account_number %>
-      · <%= pluralize(@account.statement_count, "statement") %>
+      <%= display_text(@account.account_number) %>
+      · <%= pluralize(@account.account_statements.count, "statement") %>
       <% if @account.period_start || @account.period_end %>
         · <%= display_date(@account.period_start) %> – <%= display_date(@account.period_end) %>
       <% end %>

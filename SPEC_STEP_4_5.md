@@ -48,10 +48,9 @@ A **master transactions view for one bank account**, aggregating `AccountTransac
 | Deferred / out | Work |
 |----------------|------|
 | Step 5+ | Non-filter layout polish |
-| Later | First-class `Account` AR model/table (optional refactor if grouping gets painful) |
-| Later | Master CC view (year-end statements lack a stable card identity in current schema) |
-| Never (v1) | Merging/editing transactions; inventing account identity for CSV rows with nil `account_number` beyond an explicit “Unknown / CSV” bucket |
-
+| Step 4.6 | Persist bank **`Account`** (find-or-create from gem `account_name` + statement FK) **and** account summary page — [`SPEC_STEP_4_6.md`](./SPEC_STEP_4_6.md). Supersedes derived-only `AccountSummary` for identity. |
+| Steps 4.7–4.9 | User-named **credit card** accounts, master CC txns, CC account summary — [`SPEC_STEP_4_7.md`](./SPEC_STEP_4_7.md) et seq. |
+| Never (v1) | Inventing bank accounts for CSV rows with nil `account_name` / `account_number` beyond leaving them statement-only |
 ---
 
 ## Account identity

@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   root "home#index"
 
-  resources :accounts, only: :index do
+  resources :accounts, only: %i[index show] do
     resources :transactions, only: :index, module: :accounts
   end
 

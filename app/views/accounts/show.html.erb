@@ -1,0 +1,130 @@
+<% content_for :title, @account.name %>
+
+<div class="space-y-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-sm text-muted">
+        <%= link_to "← Accounts", accounts_path, class: "hover:text-brand-700" %>
+      </p>
+      <h1 class="page-title mt-2"><%= @account.name %></h1>
+      <p class="page-subtitle">
+        <%= display_text(@account.account_number) %>
+        · <%= pluralize(@statements.size, "statement") %>
+        <% if @account.period_start || @account.period_end %>
+          · <%= display_date(@account.period_start) %> – <%= display_date(@account.period_end) %>
+        <% end %>
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to "View transactions", account_transactions_path(@account), class: "btn-primary" %>
+    </div>
+  </div>
+
+  <section class="grid gap-4 sm:grid-cols-3">
+    <div class="card-pad">
+      <p class="stat-label">Account number</p>
+      <p class="stat-value text-base"><%= display_text(@account.account_number) %></p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Period coverage</p>
+      <p class="stat-value text-base">
+        <%= display_date(@account.period_start) %> – <%= display_date(@account.period_end) %>
+      </p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Statements</p>
+      <p class="stat-value text-base"><%= @statements.size %></p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-2">
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-ink">Balances</h2>
+      <p class="mb-3 text-xs text-muted">
+        Beginning/ending balances are from the earliest/latest imported statement period; deposits and withdrawals are sums across imported statements only.
+      </p>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <tbody>
+            <tr><th class="w-1/2 text-left font-medium text-slate-500">Beginning balance</th><td class="text-right font-medium text-ink"><%= cents_to_currency(@balance_rollup.beginning_balance_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Deposits</th><td class="text-right"><%= cents_to_currency(@balance_rollup.deposits_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Withdrawals</th><td class="text-right"><%= cents_to_currency(@balance_rollup.withdrawals_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Checks</th><td class="text-right"><%= cents_to_currency(@balance_rollup.checks_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Service fees</th><td class="text-right"><%= cents_to_currency(@balance_rollup.service_fees_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Ending balance</th><td class="text-right text-base font-semibold text-ink"><%= cents_to_currency(@balance_rollup.ending_balance_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">APY earned</th><td class="text-right"><%= @balance_rollup.apy_earned.present? ? "#{@balance_rollup.apy_earned}%" : "—" %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Interest paid YTD</th><td class="text-right"><%= cents_to_currency(@balance_rollup.interest_paid_ytd_cents) %></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-ink">Section totals</h2>
+      <% if @section_totals.any? %>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @section_totals.each do |section, total_cents| %>
+                <tr>
+                  <td><%= section %></td>
+                  <td class="text-right font-medium text-ink"><%= cents_to_currency(total_cents) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="empty-state py-8">No transactions on this account.</div>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Statements</h2>
+    <% if @statements.any? %>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Format</th>
+              <th>Transactions</th>
+              <th class="text-right"> </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @statements.each do |statement| %>
+              <tr>
+                <td class="whitespace-nowrap">
+                  <% if statement.period_start || statement.period_end %>
+                    <%= display_date(statement.period_start) %> – <%= display_date(statement.period_end) %>
+                  <% else %>
+                    <%= display_text(statement.source_filename) %>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <%= display_text(statement.import_format) %>
+                  </span>
+                </td>
+                <td><%= statement.account_transactions.size %></td>
+                <td class="text-right">
+                  <%= link_to "View statement", account_statement_path(statement), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-8">No statements for this account.</div>
+    <% end %>
+  </section>
+</div>

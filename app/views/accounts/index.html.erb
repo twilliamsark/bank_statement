@@ -4,12 +4,12 @@
   <div>
     <p class="eyebrow">Across statements</p>
     <h1 class="page-title">Accounts</h1>
-    <p class="page-subtitle">Browse all transactions for a bank account, combined from every imported statement.</p>
+    <p class="page-subtitle">Bank accounts created from imported statement names, with combined history.</p>
   </div>
 
-  <% if @unnumbered_statement_count.positive? %>
+  <% if @unassigned_statement_count.positive? %>
     <p class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
-      <%= pluralize(@unnumbered_statement_count, "statement") %> without an account number (typical CSV imports) <%= @unnumbered_statement_count == 1 ? "is" : "are" %> not listed here —
+      <%= pluralize(@unassigned_statement_count, "statement") %> without an account name (typical CSV imports) <%= @unassigned_statement_count == 1 ? "is" : "are" %> not listed here —
       <%= link_to "open statements", account_statements_path, class: "underline hover:text-amber-950" %>.
     </p>
   <% end %>
@@ -30,8 +30,8 @@
         <tbody>
           <% @accounts.each do |account| %>
             <tr>
-              <td class="font-medium text-ink"><%= display_text(account.account_name) %></td>
-              <td class="whitespace-nowrap"><%= account.account_number %></td>
+              <td class="font-medium text-ink"><%= account.name %></td>
+              <td class="whitespace-nowrap"><%= display_text(account.account_number) %></td>
               <td class="whitespace-nowrap text-sm">
                 <% if account.period_start || account.period_end %>
                   <%= display_date(account.period_start) %> – <%= display_date(account.period_end) %>
@@ -39,10 +39,11 @@
                   —
                 <% end %>
               </td>
-              <td><%= account.statement_count %></td>
-              <td><%= account.transaction_count %></td>
-              <td class="text-right">
-                <%= link_to "Transactions", account_transactions_path(account), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+              <td><%= account.account_statements.size %></td>
+              <td><%= account.account_transactions.size %></td>
+              <td class="space-x-3 text-right">
+                <%= link_to "View", account_path(account), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                <%= link_to "Transactions", account_transactions_path(account), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
               </td>
             </tr>
           <% end %>
@@ -52,7 +53,7 @@
   <% else %>
     <div class="empty-state">
       <p class="text-base font-medium text-ink">No accounts yet</p>
-      <p class="mt-1 text-sm">Import a bank statement PDF (with account number) to populate this list.</p>
+      <p class="mt-1 text-sm">Import a bank statement PDF (with an account name) to create an account.</p>
       <div class="mt-5">
         <%= link_to "Import statement", new_account_statement_path, class: "btn-primary" %>
       </div>

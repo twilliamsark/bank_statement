@@ -46,7 +46,8 @@ module AccountStatements
       statement = nil
 
       ActiveRecord::Base.transaction do
-        statement = AccountStatement.create!(statement_attributes(source, gem_result))
+        account = resolve_account(gem_result)
+        statement = AccountStatement.create!(statement_attributes(source, gem_result).merge(account: account))
         source.attach_to(statement)
 
         gem_result.transactions.each do |gem_txn|
@@ -78,6 +79,15 @@ module AccountStatements
         statement: statement,
         imported_count: imported_count,
         skipped_duplicate_count: skipped_duplicate_count
+      )
+    end
+
+    def resolve_account(gem_result)
+      return nil if gem_result.account_name.blank?
+
+      Account.find_or_create_from_import!(
+        name: gem_result.account_name,
+        account_number: gem_result.account_number
       )
     end
 
