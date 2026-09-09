@@ -9,7 +9,10 @@
       <h1 class="page-title mt-2"><%= @credit_card_account.name %></h1>
       <p class="page-subtitle">
         <%= pluralize(@statements.size, "statement") %>
-        · <%= pluralize(@credit_card_account.credit_card_transactions.count, "transaction") %>
+        <% if @years_covered %>
+          · <%= @years_covered.first == @years_covered.last ? @years_covered.first : "#{@years_covered.first}–#{@years_covered.last}" %>
+        <% end %>
+        · <%= pluralize(@transaction_count, "transaction") %>
       </p>
     </div>
     <div class="flex flex-wrap gap-2">
@@ -22,6 +25,63 @@
     </div>
   </div>
 
+  <section class="card-pad bg-gradient-to-br from-white to-brand-50">
+    <p class="stat-label">Total spend</p>
+    <p class="mt-2 text-3xl font-semibold tracking-tight text-ink"><%= cents_to_currency(@total_spend_cents) %></p>
+    <p class="mt-2 text-xs text-muted">
+      Based on imported transactions for this card across all year-end statements.
+    </p>
+  </section>
+
+  <section class="grid gap-4 sm:grid-cols-3">
+    <div class="card-pad">
+      <p class="stat-label">Statements</p>
+      <p class="stat-value text-base"><%= @statements.size %></p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Years covered</p>
+      <p class="stat-value text-base">
+        <% if @years_covered %>
+          <%= @years_covered.first == @years_covered.last ? @years_covered.first : "#{@years_covered.first}–#{@years_covered.last}" %>
+        <% else %>
+          —
+        <% end %>
+      </p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Transactions</p>
+      <p class="stat-value text-base"><%= @transaction_count %></p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Category / subcategory totals</h2>
+    <% if @category_totals.any? %>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Subcategory</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @category_totals.sort_by { |(category, subcategory), _| [category, subcategory] }.each do |(category, subcategory), total_cents| %>
+              <tr>
+                <td class="font-medium text-ink"><%= category %></td>
+                <td><%= subcategory %></td>
+                <td class="text-right font-medium text-ink"><%= cents_to_currency(total_cents) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-8">No transactions on this card.</div>
+    <% end %>
+  </section>
+
   <section>
     <h2 class="mb-3 text-lg font-semibold text-ink">Statements</h2>
     <% if @statements.any? %>
@@ -32,7 +92,7 @@
               <th>Year</th>
               <th>File</th>
               <th>Format</th>
-              <th class="text-right">Total spend</th>
+              <th class="text-right">Statement total</th>
               <th>Transactions</th>
               <th class="text-right"> </th>
             </tr>

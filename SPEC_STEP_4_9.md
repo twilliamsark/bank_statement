@@ -5,7 +5,7 @@ Depends on: [`SPEC_STEP_4_7.md`](./SPEC_STEP_4_7.md), [`SPEC_STEP_4_8.md`](./SPE
 Bank parallel: [`SPEC_STEP_4_6.md`](./SPEC_STEP_4_6.md)  
 Statement-level CC summary: [`SPEC_STEP_3.md`](./SPEC_STEP_3.md) (`CreditCardStatementsController#show`)
 
-Status: **Not started** (spec only)
+Status: **Complete** (CC account summary rollups green)
 
 ---
 
@@ -108,13 +108,22 @@ Row primary action → summary show; optional secondary “Transactions”.
 
 ## Acceptance checklist (Step 4.9)
 
-- [ ] CC account show renders summary detail  
-- [ ] Category/subcategory totals across all statements  
-- [ ] Header total from transactions (filter-independent; all txns for account)  
-- [ ] Member statements listed  
-- [ ] CTA to master transactions (4.8)  
-- [ ] Index links to show  
-- [ ] Integration tests green  
+- [x] CC account show renders summary detail  
+- [x] Category/subcategory totals across all statements  
+- [x] Header total from transactions (filter-independent; all txns for account)  
+- [x] Member statements listed  
+- [x] CTA to master transactions (4.8)  
+- [x] Index links to show  
+- [x] Integration tests green  
+
+---
+
+## What you get
+
+- **`/credit_card_accounts/:id`** summary with total spend from **all txn cents** for the card
+- Category / subcategory totals across every imported year-end for that card
+- Years covered, statement count, member statements table
+- **View transactions** → master list (4.8)
 
 ---
 
