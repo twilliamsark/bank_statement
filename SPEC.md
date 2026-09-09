@@ -290,14 +290,14 @@ Filters required:
 2. Importer services + model/service tests with CSV fixtures (**gem `BigDecimal` → cents mapping; checksum skip-vs-allow-intra-file behavior; flash-ready imported/skipped counts**)
 3. Routes, controllers, summary + upload views (**display via cents→dollars helpers; show skipped-duplicate flash**)
 4. Transaction index with filters + Stimulus live-filter (**amount lookahead against dollar formatting of `amount_cents`**)
-4.5. Master account transactions view — all statements for one `account_number`, same filters as Step 4 ([`SPEC_STEP_4_5.md`](./SPEC_STEP_4_5.md))
-4.6. Persist bank `Account` from importer `account_name` (FK on statements) + account-level summary detail ([`SPEC_STEP_4_6.md`](./SPEC_STEP_4_6.md); depends on / retargets 4.5)
-4.7. Credit card account name — user-assigned CC identity; required on import ([`SPEC_STEP_4_7.md`](./SPEC_STEP_4_7.md))
-4.8. Master credit card transactions — all statements for one CC account, same filters as Step 4 ([`SPEC_STEP_4_8.md`](./SPEC_STEP_4_8.md); depends on 4.7)
-4.9. Credit card account summary — category rollups per CC account ([`SPEC_STEP_4_9.md`](./SPEC_STEP_4_9.md); depends on 4.7–4.8)
-5. Layout/nav polish ([`SPEC_STEP_5.md`](./SPEC_STEP_5.md)) — responsive header/filters, remove dead Stimulus; **not** a redesign6. Browser verification with real Documents samples (bank PDF/CSV + CC PDF/CSV) — **re-import same file and confirm duplicates are skipped; confirm a file that itself contains duplicate lines still stores both on first import**; include bank/CC account master + summary flows if 4.5–4.9 are done
+   4.5. Master account transactions view — all statements for one `account_number`, same filters as Step 4 ([`SPEC_STEP_4_5.md`](./SPEC_STEP_4_5.md))
+   4.6. Persist bank `Account` from importer `account_name` (FK on statements) + account-level summary detail ([`SPEC_STEP_4_6.md`](./SPEC_STEP_4_6.md); depends on / retargets 4.5)
+   4.7. Credit card account name — user-assigned CC identity; required on import ([`SPEC_STEP_4_7.md`](./SPEC_STEP_4_7.md))
+   4.8. Master credit card transactions — all statements for one CC account, same filters as Step 4 ([`SPEC_STEP_4_8.md`](./SPEC_STEP_4_8.md); depends on 4.7)
+   4.9. Credit card account summary — category rollups per CC account ([`SPEC_STEP_4_9.md`](./SPEC_STEP_4_9.md); depends on 4.7–4.8)
+5. Layout/nav polish ([`SPEC_STEP_5.md`](./SPEC_STEP_5.md)) — responsive header/filters, remove dead Stimulus; **not** a redesign
+6. Browser verification with real Documents samples ([`SPEC_STEP_6.md`](./SPEC_STEP_6.md)) — **Complete** (manual by user): bank/CC PDF·CSV, re-import skips, account master + summary flows
 7. Fix any issues found; run test suite
-
 ### Step notes for the two adopted recommendations
 
 These are **not** separate late steps — they land in Steps 1–2 (schema + importers) and are verified in Steps 3, 4, and 6.
@@ -317,7 +317,7 @@ These are **not** separate late steps — they land in Steps 1–2 (schema + imp
 
 ## Key files to add
 
-- `db/migrate/*_create_bank_account_statements.rb` (+ rename to `account_*`, credit_card_*) — money as `*_cents` integers; `checksum` on transaction tables
+- `db/migrate/*_create_bank_account_statements.rb` (+ rename to `account_*`, credit*card*_) — money as `_\_cents`integers;`checksum` on transaction tables
 - `app/models/account_statement.rb`, `account_transaction.rb`, `credit_card_statement.rb`, `credit_card_transaction.rb`
 - `lib/money.rb` — dollars↔cents conversion
 - Checksum helpers on transaction models
