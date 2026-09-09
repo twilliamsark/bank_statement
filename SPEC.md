@@ -1,5 +1,7 @@
 # Bank Statement App — Import, Schema, Summary & Transaction Pages
 
+**Project status: Complete** (Steps 1–7 as spec’d; final suite 95 tests green)
+
 ## Query used to generate SPEC.md
 
 We want a Rails application, use the existing Bank of America bank_statement application, whose data comes from reading bank statements and credit card statements.
@@ -297,7 +299,7 @@ Filters required:
    4.9. Credit card account summary — category rollups per CC account ([`SPEC_STEP_4_9.md`](./SPEC_STEP_4_9.md); depends on 4.7–4.8)
 5. Layout/nav polish ([`SPEC_STEP_5.md`](./SPEC_STEP_5.md)) — responsive header/filters, remove dead Stimulus; **not** a redesign
 6. Browser verification with real Documents samples ([`SPEC_STEP_6.md`](./SPEC_STEP_6.md)) — **Complete** (manual by user): bank/CC PDF·CSV, re-import skips, account master + summary flows
-7. Fix any issues found; run test suite
+7. Fix any issues found; run test suite ([`SPEC_STEP_7.md`](./SPEC_STEP_7.md)) — **Complete** (no Step 6 defects; suite green)
 ### Step notes for the two adopted recommendations
 
 These are **not** separate late steps — they land in Steps 1–2 (schema + importers) and are verified in Steps 3, 4, and 6.
