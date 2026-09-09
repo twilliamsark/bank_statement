@@ -1,0 +1,61 @@
+<% content_for :title, @credit_card_account.name %>
+
+<div class="space-y-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-sm text-muted">
+        <%= link_to "← Credit cards", credit_card_accounts_path, class: "hover:text-brand-700" %>
+      </p>
+      <h1 class="page-title mt-2"><%= @credit_card_account.name %></h1>
+      <p class="page-subtitle">
+        <%= pluralize(@statements.size, "statement") %>
+        · <%= pluralize(@credit_card_account.credit_card_transactions.count, "transaction") %>
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to "Import statement",
+            new_credit_card_statement_path(credit_card_account_id: @credit_card_account.id),
+            class: "btn-primary" %>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Statements</h2>
+    <% if @statements.any? %>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>File</th>
+              <th>Format</th>
+              <th class="text-right">Total spend</th>
+              <th>Transactions</th>
+              <th class="text-right"> </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @statements.each do |statement| %>
+              <tr>
+                <td class="font-medium text-ink"><%= display_text(statement.statement_year) %></td>
+                <td><%= display_text(statement.source_filename) %></td>
+                <td>
+                  <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <%= display_text(statement.import_format) %>
+                  </span>
+                </td>
+                <td class="text-right"><%= cents_to_currency(statement.total_spend_cents) %></td>
+                <td><%= statement.credit_card_transactions.size %></td>
+                <td class="text-right">
+                  <%= link_to "View", credit_card_statement_path(statement), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-8">No statements for this card yet.</div>
+    <% end %>
+  </section>
+</div>

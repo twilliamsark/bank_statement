@@ -1,0 +1,53 @@
+<% content_for :title, "Credit cards" %>
+
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Year-end summaries</p>
+      <h1 class="page-title">Credit cards</h1>
+      <p class="page-subtitle">Named cards you assign when importing year-end statements.</p>
+    </div>
+    <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+  </div>
+
+  <% if @credit_card_accounts.any? %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Card</th>
+            <th>Statements</th>
+            <th>Transactions</th>
+            <th class="text-right"> </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @credit_card_accounts.each do |account| %>
+            <tr>
+              <td class="font-medium text-ink"><%= account.name %></td>
+              <td><%= account.credit_card_statements.size %></td>
+              <td><%= account.credit_card_transactions.size %></td>
+              <td class="space-x-3 text-right">
+                <%= link_to "View", credit_card_account_path(account), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                <%= link_to "Import", new_credit_card_statement_path(credit_card_account_id: account.id), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <p class="text-base font-medium text-ink">No credit cards yet</p>
+      <p class="mt-1 text-sm">Import a year-end statement and give the card a name to get started.</p>
+      <div class="mt-5">
+        <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+
+  <p class="text-sm text-muted">
+    Looking for the flat statement list?
+    <%= link_to "All CC statements", credit_card_statements_path, class: "font-medium text-brand-700 hover:text-brand-800" %>
+  </p>
+</div>

@@ -5,6 +5,7 @@ require "test_helper"
 class CreditCardStatementTest < ActiveSupport::TestCase
   test "has many transactions and destroys them" do
     statement = CreditCardStatement.create!(
+      credit_card_account: create_credit_card_account!,
       statement_year: 2025,
       source_filename: "cc.csv",
       import_format: "csv",
@@ -25,7 +26,11 @@ class CreditCardStatementTest < ActiveSupport::TestCase
   end
 
   test "can attach a source file" do
-    statement = CreditCardStatement.create!(import_format: "pdf", source_filename: "cc.pdf")
+    statement = CreditCardStatement.create!(
+      credit_card_account: create_credit_card_account!,
+      import_format: "pdf",
+      source_filename: "cc.pdf"
+    )
     statement.source_file.attach(
       io: StringIO.new("%PDF-1.4"),
       filename: "cc.pdf",

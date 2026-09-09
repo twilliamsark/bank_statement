@@ -37,8 +37,8 @@
                 class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(accounts_path) || request.path.start_with?('/accounts') ? 'bg-brand-50 text-brand-800' : ''}" %>
           <%= link_to "Statements", account_statements_path,
                 class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(account_statements_path) || request.path.start_with?('/account_statements') ? 'bg-brand-50 text-brand-800' : ''}" %>
-          <%= link_to "Credit cards", credit_card_statements_path,
-                class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(credit_card_statements_path) || request.path.start_with?('/credit_card_statements') ? 'bg-brand-50 text-brand-800' : ''}" %>
+          <%= link_to "Credit cards", credit_card_accounts_path,
+                class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(credit_card_accounts_path) || request.path.start_with?('/credit_card_accounts') || request.path.start_with?('/credit_card_statements') ? 'bg-brand-50 text-brand-800' : ''}" %>
         </nav>
       </div>
     </header>

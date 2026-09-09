@@ -6,13 +6,19 @@ module CreditCardStatements
       new(...).call
     end
 
-    def initialize(path: nil, io: nil, filename: nil)
+    def initialize(path: nil, io: nil, filename: nil, credit_card_account: nil, credit_card_account_name: nil)
       @path = path
       @io = io
       @filename = filename
+      @credit_card_account = credit_card_account
+      @credit_card_account_name = credit_card_account_name
     end
 
     def call
+      if @credit_card_account.blank? && @credit_card_account_name.blank?
+        raise Imports::Error, "credit card account is required"
+      end
+
       source = Imports::SourceFile.open(path: @path, io: @io, filename: @filename)
 
       begin
@@ -20,7 +26,7 @@ module CreditCardStatements
         persist(source, gem_result)
       rescue Imports::Error
         raise
-      rescue ArgumentError, Errno::ENOENT => e
+      rescue ArgumentError, Errno::ENOENT, ActiveRecord::RecordInvalid => e
         raise Imports::Error, e.message
       ensure
         source.cleanup!
@@ -47,7 +53,10 @@ module CreditCardStatements
       statement = nil
 
       ActiveRecord::Base.transaction do
+        account = resolve_account!
+
         statement = CreditCardStatement.create!(
+          credit_card_account: account,
           source_filename: source.original_filename,
           import_format: source.import_format,
           page_count: gem_result.page_count,
@@ -96,6 +105,12 @@ module CreditCardStatements
         imported_count: imported_count,
         skipped_duplicate_count: skipped_duplicate_count
       )
+    end
+
+    def resolve_account!
+      return @credit_card_account if @credit_card_account.present?
+
+      CreditCardAccount.find_or_create_from_name!(@credit_card_account_name)
     end
 
     # Year of the latest transaction date (SPEC).

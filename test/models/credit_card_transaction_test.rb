@@ -5,6 +5,7 @@ require "test_helper"
 class CreditCardTransactionTest < ActiveSupport::TestCase
   setup do
     @statement = CreditCardStatement.create!(
+      credit_card_account: create_credit_card_account!,
       statement_year: 2025,
       source_filename: "cc.csv",
       import_format: "csv"

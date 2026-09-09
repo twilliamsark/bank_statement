@@ -13,7 +13,7 @@ class CreditCardStatements::ImporterTest < ActiveSupport::TestCase
       2025-07-01|Merchandise|Clothing|REFUND|CITY, ST|-5.00
     CSV
 
-    result = CreditCardStatements::Importer.call(path: path)
+    result = CreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
 
     assert_equal 3, result.imported_count
     assert_equal 0, result.skipped_duplicate_count
@@ -36,7 +36,7 @@ class CreditCardStatements::ImporterTest < ActiveSupport::TestCase
       2025-01-15|Merchandise|Restaurants|COFFEE|CITY, ST|4.50
     CSV
 
-    result = CreditCardStatements::Importer.call(path: path)
+    result = CreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
 
     assert_equal 2, result.imported_count
     assert_equal 2, result.statement.credit_card_transactions.count
@@ -48,8 +48,8 @@ class CreditCardStatements::ImporterTest < ActiveSupport::TestCase
       2025-03-01|Merchandise|Clothing|STORE A|CITY, ST|12.34
     CSV
 
-    first = CreditCardStatements::Importer.call(path: path)
-    second = CreditCardStatements::Importer.call(path: path)
+    first = CreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
+    second = CreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
 
     assert_equal 1, first.imported_count
     assert_equal 0, second.imported_count
@@ -63,7 +63,7 @@ class CreditCardStatements::ImporterTest < ActiveSupport::TestCase
     File.write(path, "nope")
 
     assert_raises(Imports::Error) do
-      CreditCardStatements::Importer.call(path: path)
+      CreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
     end
     assert_equal 0, CreditCardStatement.count
   end
@@ -71,7 +71,7 @@ class CreditCardStatements::ImporterTest < ActiveSupport::TestCase
   test "imports BoA_CC_YearEndSummary_2025.pdf when present" do
     skip "BoA_CC_YearEndSummary_2025.pdf not found" unless File.exist?(YEAR_END_PDF)
 
-    result = CreditCardStatements::Importer.call(path: YEAR_END_PDF)
+    result = CreditCardStatements::Importer.call(path: YEAR_END_PDF, credit_card_account_name: "Travel Card")
 
     assert_operator result.imported_count, :>, 0
     assert_equal 0, result.skipped_duplicate_count
@@ -88,7 +88,7 @@ class CreditCardStatements::ImporterTest < ActiveSupport::TestCase
     assert sample.subcategory.present?
     assert sample.checksum.present?
 
-    reimport = CreditCardStatements::Importer.call(path: YEAR_END_PDF)
+    reimport = CreditCardStatements::Importer.call(path: YEAR_END_PDF, credit_card_account_name: "Travel Card")
     assert_equal 0, reimport.imported_count
     assert_equal result.imported_count, reimport.skipped_duplicate_count
   end

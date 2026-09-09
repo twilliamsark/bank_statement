@@ -4,7 +4,12 @@ class CreditCardStatementsController < ApplicationController
   before_action :set_credit_card_statement, only: %i[show destroy]
 
   def index
-    @credit_card_statements = CreditCardStatement.order(created_at: :desc).includes(:credit_card_transactions)
+    @credit_card_statements = CreditCardStatement.order(created_at: :desc)
+      .includes(:credit_card_transactions, :credit_card_account)
+    if params[:credit_card_account_id].present?
+      @credit_card_account = CreditCardAccount.find(params[:credit_card_account_id])
+      @credit_card_statements = @credit_card_statements.where(credit_card_account_id: @credit_card_account.id)
+    end
   end
 
   def show
@@ -14,20 +19,26 @@ class CreditCardStatementsController < ApplicationController
   end
 
   def new
+    @credit_card_accounts = CreditCardAccount.order(:name)
+    @selected_account_id = params[:credit_card_account_id]
+    @account_mode = @credit_card_accounts.any? && @selected_account_id.blank? ? "existing" : (@selected_account_id.present? ? "existing" : "new")
+    @account_mode = "existing" if @selected_account_id.present?
+    @account_mode = "new" if @credit_card_accounts.empty?
   end
 
   def create
     upload = params[:file]
     if upload.blank?
-      redirect_to new_credit_card_statement_path, alert: "Please choose a PDF or CSV file to import."
+      redirect_to new_credit_card_statement_path(credit_card_account_id: params[:credit_card_account_id]),
+                  alert: "Please choose a PDF or CSV file to import."
       return
     end
 
-    result = CreditCardStatements::Importer.call(io: upload, filename: upload.original_filename)
-    redirect_to credit_card_statement_path(result.statement),
-                notice: import_notice(result)
-  rescue Imports::Error => e
-    redirect_to new_credit_card_statement_path, alert: e.message
+    result = import_with_account!(upload)
+    redirect_to credit_card_statement_path(result.statement), notice: import_notice(result)
+  rescue Imports::Error, ActiveRecord::RecordNotFound => e
+    redirect_to new_credit_card_statement_path(credit_card_account_id: params[:credit_card_account_id]),
+                alert: e.message
   end
 
   def destroy
@@ -39,6 +50,26 @@ class CreditCardStatementsController < ApplicationController
 
   def set_credit_card_statement
     @credit_card_statement = CreditCardStatement.find(params[:id])
+  end
+
+  def import_with_account!(upload)
+    case params[:account_mode]
+    when "existing"
+      account = CreditCardAccount.find(params[:credit_card_account_id])
+      CreditCardStatements::Importer.call(
+        io: upload,
+        filename: upload.original_filename,
+        credit_card_account: account
+      )
+    when "new"
+      CreditCardStatements::Importer.call(
+        io: upload,
+        filename: upload.original_filename,
+        credit_card_account_name: params[:new_account_name]
+      )
+    else
+      raise Imports::Error, "Please choose an existing credit card or enter a new name."
+    end
   end
 
   def import_notice(result)

@@ -5,7 +5,7 @@ Prior CC UI: [`SPEC_STEP_3.md`](./SPEC_STEP_3.md)
 Bank parallel (derived identity): [`SPEC_STEP_4_5.md`](./SPEC_STEP_4_5.md)  
 Follow-ons: [`SPEC_STEP_4_8.md`](./SPEC_STEP_4_8.md) (master CC txns), [`SPEC_STEP_4_9.md`](./SPEC_STEP_4_9.md) (CC account summary)
 
-Status: **Not started** (spec only)
+Status: **Complete** (CC accounts + required import assignment green)
 
 ---
 
@@ -170,13 +170,29 @@ Preselect: `new_credit_card_statement_path(credit_card_account_id: account.id)`.
 
 ## Acceptance checklist (Step 4.7)
 
-- [ ] `CreditCardAccount` persisted with unique name  
-- [ ] Every new CC import requires existing or new account  
-- [ ] Importer/controller associates statement in one transaction  
-- [ ] `/credit_card_accounts` index works  
-- [ ] Nav/home point at CC accounts  
-- [ ] Existing statements backfilled; FK required  
-- [ ] Tests green  
+- [x] `CreditCardAccount` persisted with unique name  
+- [x] Every new CC import requires existing or new account  
+- [x] Importer/controller associates statement in one transaction  
+- [x] `/credit_card_accounts` index works  
+- [x] Nav/home point at CC accounts  
+- [x] Existing statements backfilled; FK required  
+- [x] Tests green  
+
+---
+
+## What you get
+
+- Persisted **`CreditCardAccount`** (unique normalized name)
+- Import requires **existing card** or **new name**, then the file
+- Statements always belong to a card (`credit_card_account_id` required; old rows backfilled to **Unassigned**)
+- **`/credit_card_accounts`** index + show (member statements, import preselect)
+- Nav / home **Credit cards** → accounts index
+
+### Implementation notes
+
+- `credit_card_accounts` (`name`, `name_key`) + required FK on statements
+- Importer accepts `credit_card_account:` / `credit_card_account_name:` (account resolved after extract, inside the persist transaction)
+- Account destroy restricted while statements exist
 
 ---
 

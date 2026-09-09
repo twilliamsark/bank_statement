@@ -11,7 +11,8 @@ class CreditCardStatementTransactionsFilterTest < ActionDispatch::IntegrationTes
         2025-06-15|Travel and Transportation|Hotels|HOTEL STAY|JONESBORO, AR|100.00
         2025-07-01|Merchandise|Clothing|STORE B|CITY, ST|45.00
       CSV
-      filename: "cc.csv"
+      filename: "cc.csv",
+      credit_card_account_name: "Travel Card"
     )
     @statement = result.statement
   end

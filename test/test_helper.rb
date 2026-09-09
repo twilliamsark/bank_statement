@@ -11,5 +11,8 @@ module ActiveSupport
     fixtures :all
 
     # Add more helper methods to be used by all tests here...
+    def create_credit_card_account!(name: "Test Card")
+      CreditCardAccount.find_or_create_from_name!(name)
+    end
   end
 end

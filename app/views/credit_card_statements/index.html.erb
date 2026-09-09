@@ -3,11 +3,17 @@
 <div class="space-y-6">
   <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
-      <p class="eyebrow">Year-end summary</p>
-      <h1 class="page-title">Credit card statements</h1>
-      <p class="page-subtitle">Category spend and imported year-end files.</p>
+      <p class="text-sm text-muted">
+        <%= link_to "← Credit cards", credit_card_accounts_path, class: "hover:text-brand-700" %>
+      </p>
+      <h1 class="page-title mt-2">
+        <%= @credit_card_account ? "#{@credit_card_account.name} statements" : "Credit card statements" %>
+      </h1>
+      <p class="page-subtitle">Imported year-end files<%= @credit_card_account ? " for this card" : "" %>.</p>
     </div>
-    <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+    <%= link_to "Import statement",
+          new_credit_card_statement_path(credit_card_account_id: @credit_card_account&.id),
+          class: "btn-primary" %>
   </div>
 
   <% if @credit_card_statements.any? %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_09_182525) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_09_183752) do
   create_table "account_statements", force: :cascade do |t|
     t.integer "account_id"
     t.string "account_name"
@@ -89,14 +89,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_182525) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "credit_card_accounts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "name_key", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name_key"], name: "index_credit_card_accounts_on_name_key", unique: true
+  end
+
   create_table "credit_card_statements", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "credit_card_account_id", null: false
     t.string "import_format"
     t.integer "page_count"
     t.string "source_filename"
     t.integer "statement_year"
     t.integer "total_spend_cents"
     t.datetime "updated_at", null: false
+    t.index ["credit_card_account_id"], name: "index_credit_card_statements_on_credit_card_account_id"
     t.index ["statement_year"], name: "index_credit_card_statements_on_statement_year"
   end
 
@@ -123,5 +133,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_182525) do
   add_foreign_key "account_transactions", "account_statements"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "credit_card_statements", "credit_card_accounts"
   add_foreign_key "credit_card_transactions", "credit_card_statements"
 end
