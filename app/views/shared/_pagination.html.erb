@@ -1,0 +1,28 @@
+<% if pagination.paginate? %>
+  <nav class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm" aria-label="Pagination">
+    <p class="text-muted">
+      Showing <%= pagination.from_item %>–<%= pagination.to_item %> of <%= pagination.total_count %>
+    </p>
+    <div class="flex items-center gap-2">
+      <% if pagination.page > 1 %>
+        <%= link_to "Previous",
+              pagination_path_for(pagination.page - 1),
+              data: { turbo_frame: "transactions" },
+              class: "btn-secondary" %>
+      <% else %>
+        <span class="btn-secondary pointer-events-none opacity-40">Previous</span>
+      <% end %>
+
+      <span class="px-2 font-medium text-ink">Page <%= pagination.page %> of <%= pagination.total_pages %></span>
+
+      <% if pagination.page < pagination.total_pages %>
+        <%= link_to "Next",
+              pagination_path_for(pagination.page + 1),
+              data: { turbo_frame: "transactions" },
+              class: "btn-secondary" %>
+      <% else %>
+        <span class="btn-secondary pointer-events-none opacity-40">Next</span>
+      <% end %>
+    </div>
+  </nav>
+<% end %>

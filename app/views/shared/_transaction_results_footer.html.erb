@@ -1,0 +1,13 @@
+<div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-slate-50 px-4 py-3">
+  <p class="text-sm text-muted">
+    <% if filtered %>
+      <%= pluralize(filtered_count, "matching transaction") %>
+    <% else %>
+      <%= pluralize(filtered_count, "transaction") %>
+    <% end %>
+  </p>
+  <p class="text-sm">
+    <span class="stat-label">Total</span>
+    <span class="ml-2 text-lg font-semibold text-ink"><%= cents_to_currency(amount_total_cents) %></span>
+  </p>
+</div>

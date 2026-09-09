@@ -18,6 +18,9 @@
     <%= render "account_statements/transactions/results",
           transactions: @transactions,
           total_count: @total_count,
+          filtered_count: @filtered_count,
+          amount_total_cents: @amount_total_cents,
+          pagination: @pagination,
           filtered: @filtered %>
   <% end %>
 </div>

@@ -3,9 +3,10 @@
 require "test_helper"
 
 class AccountStatementsTest < ActionDispatch::IntegrationTest
-  test "home links to account statements" do
+  test "home links to accounts and statements" do
     get root_path
     assert_response :success
+    assert_select "a[href=?]", accounts_path
     assert_select "a[href=?]", account_statements_path
   end
 

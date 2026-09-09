@@ -1,14 +1,22 @@
 <div class="space-y-4">
   <p class="text-sm text-muted">
     <% if filtered %>
-      <%= pluralize(transactions.size, "match") %> of <%= pluralize(total_count, "transaction") %>
+      <%= pluralize(filtered_count, "match") %> of <%= pluralize(total_count, "transaction") %>
     <% else %>
-      <%= pluralize(transactions.size, "transaction") %>
+      <%= pluralize(filtered_count, "transaction") %>
+    <% end %>
+    <% if pagination.paginate? %>
+      · page <%= pagination.page %> of <%= pagination.total_pages %>
     <% end %>
   </p>
 
   <% if transactions.any? %>
     <%= render "credit_card_statements/transactions/table", transactions: transactions %>
+    <%= render "shared/pagination", pagination: pagination %>
+    <%= render "shared/transaction_results_footer",
+          filtered: filtered,
+          filtered_count: filtered_count,
+          amount_total_cents: amount_total_cents %>
   <% else %>
     <div class="empty-state">
       <% if filtered %>

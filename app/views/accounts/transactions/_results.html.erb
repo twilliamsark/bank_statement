@@ -11,7 +11,7 @@
   </p>
 
   <% if transactions.any? %>
-    <%= render "account_statements/transactions/table", transactions: transactions %>
+    <%= render "account_statements/transactions/table", transactions: transactions, show_statement: true %>
     <%= render "shared/pagination", pagination: pagination %>
     <%= render "shared/transaction_results_footer",
           filtered: filtered,

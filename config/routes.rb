@@ -3,6 +3,10 @@ Rails.application.routes.draw do
 
   root "home#index"
 
+  resources :accounts, only: :index do
+    resources :transactions, only: :index, module: :accounts
+  end
+
   resources :account_statements, only: %i[index show new create destroy] do
     resources :transactions, only: :index, module: :account_statements
   end

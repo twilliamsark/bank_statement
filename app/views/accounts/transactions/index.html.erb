@@ -1,0 +1,33 @@
+<% content_for :title, "Account transactions" %>
+
+<div class="space-y-6">
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to "← Accounts", accounts_path, class: "hover:text-brand-700" %>
+    </p>
+    <h1 class="page-title mt-2"><%= display_text(@account.account_name) %></h1>
+    <p class="page-subtitle">
+      <%= @account.account_number %>
+      · <%= pluralize(@account.statement_count, "statement") %>
+      <% if @account.period_start || @account.period_end %>
+        · <%= display_date(@account.period_start) %> – <%= display_date(@account.period_end) %>
+      <% end %>
+    </p>
+  </div>
+
+  <%= render "shared/account_transaction_filters",
+        form_url: account_transactions_path(@account),
+        clear_url: account_transactions_path(@account),
+        sections: @sections,
+        filtered: @filtered %>
+
+  <%= turbo_frame_tag "transactions" do %>
+    <%= render "accounts/transactions/results",
+          transactions: @transactions,
+          total_count: @total_count,
+          filtered_count: @filtered_count,
+          amount_total_cents: @amount_total_cents,
+          pagination: @pagination,
+          filtered: @filtered %>
+  <% end %>
+</div>

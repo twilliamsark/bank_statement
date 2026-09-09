@@ -11,19 +11,32 @@
       </p>
       <div class="mt-6 flex flex-wrap gap-3">
         <%= link_to "Import account statement", new_account_statement_path, class: "btn-primary" %>
-        <%= link_to "Import credit card statement", new_credit_card_statement_path, class: "btn-secondary" %>
+        <%= link_to "Browse accounts", accounts_path, class: "btn-secondary" %>
       </div>
     </div>
   </section>
 
-  <section class="grid gap-4 md:grid-cols-2">
+  <section class="grid gap-4 md:grid-cols-3">
+    <%= link_to accounts_path, class: "card-pad group transition hover:-translate-y-0.5 hover:border-brand-600/30 hover:shadow-md" do %>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="eyebrow">Across statements</p>
+          <h2 class="mt-2 text-xl font-semibold text-ink">Accounts</h2>
+          <p class="mt-2 text-sm leading-relaxed text-muted">
+            All transactions for a checking or savings account, combined and filterable.
+          </p>
+        </div>
+        <span class="rounded-xl bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 group-hover:bg-brand-100">Open</span>
+      </div>
+    <% end %>
+
     <%= link_to account_statements_path, class: "card-pad group transition hover:-translate-y-0.5 hover:border-brand-600/30 hover:shadow-md" do %>
       <div class="flex items-start justify-between gap-3">
         <div>
           <p class="eyebrow">Checking &amp; savings</p>
-          <h2 class="mt-2 text-xl font-semibold text-ink">Bank account statements</h2>
+          <h2 class="mt-2 text-xl font-semibold text-ink">Statements</h2>
           <p class="mt-2 text-sm leading-relaxed text-muted">
-            Period balances, section totals, and transaction lists from monthly account statements.
+            Period balances, section totals, and per-statement transaction lists.
           </p>
         </div>
         <span class="rounded-xl bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 group-hover:bg-brand-100">Open</span>
@@ -34,7 +47,7 @@
       <div class="flex items-start justify-between gap-3">
         <div>
           <p class="eyebrow">Year-end summary</p>
-          <h2 class="mt-2 text-xl font-semibold text-ink">Credit card statements</h2>
+          <h2 class="mt-2 text-xl font-semibold text-ink">Credit cards</h2>
           <p class="mt-2 text-sm leading-relaxed text-muted">
             Category and subcategory spend with full transaction detail from BoA year-end PDFs.
           </p>

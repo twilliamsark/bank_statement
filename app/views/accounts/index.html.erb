@@ -1,0 +1,61 @@
+<% content_for :title, "Accounts" %>
+
+<div class="space-y-6">
+  <div>
+    <p class="eyebrow">Across statements</p>
+    <h1 class="page-title">Accounts</h1>
+    <p class="page-subtitle">Browse all transactions for a bank account, combined from every imported statement.</p>
+  </div>
+
+  <% if @unnumbered_statement_count.positive? %>
+    <p class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
+      <%= pluralize(@unnumbered_statement_count, "statement") %> without an account number (typical CSV imports) <%= @unnumbered_statement_count == 1 ? "is" : "are" %> not listed here —
+      <%= link_to "open statements", account_statements_path, class: "underline hover:text-amber-950" %>.
+    </p>
+  <% end %>
+
+  <% if @accounts.any? %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Number</th>
+            <th>Period coverage</th>
+            <th>Statements</th>
+            <th>Transactions</th>
+            <th class="text-right"> </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @accounts.each do |account| %>
+            <tr>
+              <td class="font-medium text-ink"><%= display_text(account.account_name) %></td>
+              <td class="whitespace-nowrap"><%= account.account_number %></td>
+              <td class="whitespace-nowrap text-sm">
+                <% if account.period_start || account.period_end %>
+                  <%= display_date(account.period_start) %> – <%= display_date(account.period_end) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><%= account.statement_count %></td>
+              <td><%= account.transaction_count %></td>
+              <td class="text-right">
+                <%= link_to "Transactions", account_transactions_path(account), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <p class="text-base font-medium text-ink">No accounts yet</p>
+      <p class="mt-1 text-sm">Import a bank statement PDF (with account number) to populate this list.</p>
+      <div class="mt-5">
+        <%= link_to "Import statement", new_account_statement_path, class: "btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>
