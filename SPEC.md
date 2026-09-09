@@ -290,8 +290,9 @@ Filters required:
 2. Importer services + model/service tests with CSV fixtures (**gem `BigDecimal` → cents mapping; checksum skip-vs-allow-intra-file behavior; flash-ready imported/skipped counts**)
 3. Routes, controllers, summary + upload views (**display via cents→dollars helpers; show skipped-duplicate flash**)
 4. Transaction index with filters + Stimulus live-filter (**amount lookahead against dollar formatting of `amount_cents`**)
+4.5. Master account transactions view — all statements for one `account_number`, same filters as Step 4 ([`SPEC_STEP_4_5.md`](./SPEC_STEP_4_5.md))
 5. Layout/nav polish
-6. Browser verification with real Documents samples (bank PDF/CSV + CC PDF/CSV) — **re-import same file and confirm duplicates are skipped; confirm a file that itself contains duplicate lines still stores both on first import**
+6. Browser verification with real Documents samples (bank PDF/CSV + CC PDF/CSV) — **re-import same file and confirm duplicates are skipped; confirm a file that itself contains duplicate lines still stores both on first import**; include master account view if 4.5 is done
 7. Fix any issues found; run test suite
 
 ### Step notes for the two adopted recommendations

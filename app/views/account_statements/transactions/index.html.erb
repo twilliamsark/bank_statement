@@ -1,19 +1,23 @@
 <% content_for :title, "Account transactions" %>
 
 <div class="space-y-6">
-  <div class="flex flex-wrap items-end justify-between gap-4">
-    <div>
-      <p class="text-sm text-muted">
-        <%= link_to "← Statement summary", account_statement_path(@account_statement), class: "hover:text-brand-700" %>
-      </p>
-      <h1 class="page-title mt-2">Transactions</h1>
-      <p class="page-subtitle"><%= pluralize(@transactions.size, "transaction") %></p>
-    </div>
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to "← Statement summary", account_statement_path(@account_statement), class: "hover:text-brand-700" %>
+    </p>
+    <h1 class="page-title mt-2">Transactions</h1>
+    <p class="page-subtitle"><%= display_text(@account_statement.source_filename) %></p>
   </div>
 
-  <% if @transactions.any? %>
-    <%= render "account_statements/transactions/table", transactions: @transactions %>
-  <% else %>
-    <div class="empty-state">No transactions.</div>
+  <%= render "account_statements/transactions/filters",
+        account_statement: @account_statement,
+        sections: @sections,
+        filtered: @filtered %>
+
+  <%= turbo_frame_tag "transactions" do %>
+    <%= render "account_statements/transactions/results",
+          transactions: @transactions,
+          total_count: @total_count,
+          filtered: @filtered %>
   <% end %>
 </div>

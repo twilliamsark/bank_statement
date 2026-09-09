@@ -1,19 +1,24 @@
 <% content_for :title, "Credit card transactions" %>
 
 <div class="space-y-6">
-  <div class="flex flex-wrap items-end justify-between gap-4">
-    <div>
-      <p class="text-sm text-muted">
-        <%= link_to "← Statement summary", credit_card_statement_path(@credit_card_statement), class: "hover:text-brand-700" %>
-      </p>
-      <h1 class="page-title mt-2">Transactions</h1>
-      <p class="page-subtitle"><%= pluralize(@transactions.size, "transaction") %></p>
-    </div>
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to "← Statement summary", credit_card_statement_path(@credit_card_statement), class: "hover:text-brand-700" %>
+    </p>
+    <h1 class="page-title mt-2">Transactions</h1>
+    <p class="page-subtitle"><%= display_text(@credit_card_statement.source_filename) %></p>
   </div>
 
-  <% if @transactions.any? %>
-    <%= render "credit_card_statements/transactions/table", transactions: @transactions %>
-  <% else %>
-    <div class="empty-state">No transactions.</div>
+  <%= render "credit_card_statements/transactions/filters",
+        credit_card_statement: @credit_card_statement,
+        categories: @categories,
+        subcategories: @subcategories,
+        filtered: @filtered %>
+
+  <%= turbo_frame_tag "transactions" do %>
+    <%= render "credit_card_statements/transactions/results",
+          transactions: @transactions,
+          total_count: @total_count,
+          filtered: @filtered %>
   <% end %>
 </div>

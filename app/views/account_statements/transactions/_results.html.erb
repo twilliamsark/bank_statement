@@ -1,0 +1,21 @@
+<div class="space-y-4">
+  <p class="text-sm text-muted">
+    <% if filtered %>
+      <%= pluralize(transactions.size, "match") %> of <%= pluralize(total_count, "transaction") %>
+    <% else %>
+      <%= pluralize(transactions.size, "transaction") %>
+    <% end %>
+  </p>
+
+  <% if transactions.any? %>
+    <%= render "account_statements/transactions/table", transactions: transactions %>
+  <% else %>
+    <div class="empty-state">
+      <% if filtered %>
+        No transactions match these filters.
+      <% else %>
+        No transactions.
+      <% end %>
+    </div>
+  <% end %>
+</div>
