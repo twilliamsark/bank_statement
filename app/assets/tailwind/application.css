@@ -20,7 +20,43 @@
   }
 
   .app-main {
-    @apply mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8;
+    @apply mx-auto max-w-6xl px-4 py-6 pb-10 sm:px-6 sm:py-8 lg:px-8;
+  }
+
+  .app-header-inner {
+    @apply mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 lg:px-8;
+  }
+
+  .app-nav {
+    @apply flex max-w-full items-center gap-1 overflow-x-auto text-sm font-medium [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+  }
+
+  .app-nav-link {
+    @apply shrink-0 rounded-lg px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-ink;
+  }
+
+  .app-nav-link-active {
+    @apply bg-brand-50 text-brand-800 hover:bg-brand-50 hover:text-brand-800;
+  }
+
+  .app-footer {
+    @apply border-t border-line/80 bg-white/80;
+  }
+
+  .app-footer-inner {
+    @apply mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 text-xs text-muted sm:px-6 lg:px-8;
+  }
+
+  .filter-grid {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .filter-label {
+    @apply block text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  .filter-input {
+    @apply mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-sm sm:py-2;
   }
 
   .btn-primary {

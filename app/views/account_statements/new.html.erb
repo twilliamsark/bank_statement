@@ -20,7 +20,7 @@
     </div>
 
     <div class="flex flex-wrap gap-3 pt-1">
-      <%= submit_tag "Import", class: "btn-primary cursor-pointer" %>
+      <%= submit_tag "Import", class: "btn-primary cursor-pointer", data: { turbo_submits_with: "Importing…" } %>
       <%= link_to "Cancel", account_statements_path, class: "btn-secondary" %>
     </div>
   <% end %>

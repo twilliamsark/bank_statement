@@ -16,4 +16,14 @@ module ApplicationHelper
   def display_text(value)
     value.presence || "—"
   end
+
+  def nav_link(label, path, active: false)
+    classes = [ "app-nav-link" ]
+    classes << "app-nav-link-active" if active
+    link_to label, path, class: classes.join(" ")
+  end
+
+  def nav_section_active?(*prefixes)
+    prefixes.any? { |prefix| request.path == prefix || request.path.start_with?("#{prefix}/") }
+  end
 end

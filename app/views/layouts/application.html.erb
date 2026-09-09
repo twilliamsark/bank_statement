@@ -19,33 +19,37 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="app-shell">
+  <body class="app-shell flex min-h-screen flex-col">
     <header class="sticky top-0 z-40 border-b border-line/80 bg-white/90 backdrop-blur">
-      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <%= link_to root_path, class: "group flex items-center gap-3" do %>
-          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700 text-sm font-bold text-white shadow-sm">
+      <div class="app-header-inner">
+        <%= link_to root_path, class: "group flex min-w-0 items-center gap-3" do %>
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-sm font-bold text-white shadow-sm">
             BS
           </span>
-          <span>
-            <span class="block text-sm font-semibold text-ink group-hover:text-brand-800">Bank Statement</span>
-            <span class="block text-xs text-muted">BoA imports &amp; summaries</span>
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-semibold text-ink group-hover:text-brand-800">Bank Statement</span>
+            <span class="hidden text-xs text-muted sm:block">BoA imports &amp; summaries</span>
           </span>
         <% end %>
 
-        <nav class="flex flex-wrap items-center gap-1 text-sm font-medium">
-          <%= link_to "Accounts", accounts_path,
-                class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(accounts_path) || request.path.start_with?('/accounts') ? 'bg-brand-50 text-brand-800' : ''}" %>
-          <%= link_to "Statements", account_statements_path,
-                class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(account_statements_path) || request.path.start_with?('/account_statements') ? 'bg-brand-50 text-brand-800' : ''}" %>
-          <%= link_to "Credit cards", credit_card_accounts_path,
-                class: "rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-ink #{current_page?(credit_card_accounts_path) || request.path.start_with?('/credit_card_accounts') || request.path.start_with?('/credit_card_statements') ? 'bg-brand-50 text-brand-800' : ''}" %>
+        <nav class="app-nav" aria-label="Primary">
+          <%= nav_link "Accounts", accounts_path, active: nav_section_active?("/accounts") %>
+          <%= nav_link "Statements", account_statements_path, active: nav_section_active?("/account_statements") %>
+          <%= nav_link "Credit cards", credit_card_accounts_path, active: nav_section_active?("/credit_card_accounts", "/credit_card_statements") %>
         </nav>
       </div>
     </header>
 
-    <main class="app-main">
+    <main class="app-main w-full flex-1">
       <%= render "shared/flash" %>
       <%= yield %>
     </main>
+
+    <footer class="app-footer">
+      <div class="app-footer-inner">
+        <span>Bank Statement</span>
+        <span class="hidden sm:inline">Personal BoA import workspace</span>
+      </div>
+    </footer>
   </body>
 </html>
