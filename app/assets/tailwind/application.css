@@ -1,1 +1,101 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-surface: #ffffff;
+  --color-canvas: #f8fafc;
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-canvas text-ink antialiased;
+  }
+
+  .app-main {
+    @apply mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-sm;
+  }
+
+  .card-pad {
+    @apply rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6;
+  }
+
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight text-ink sm:text-3xl;
+  }
+
+  .page-subtitle {
+    @apply mt-1 text-sm text-muted;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-brand-700;
+  }
+
+  .data-table-wrap {
+    @apply overflow-x-auto rounded-2xl border border-line bg-surface shadow-sm;
+  }
+
+  .data-table {
+    @apply min-w-full divide-y divide-line text-sm;
+  }
+
+  .data-table thead {
+    @apply bg-slate-50/90 text-left text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  .data-table th {
+    @apply px-4 py-3;
+  }
+
+  .data-table tbody {
+    @apply divide-y divide-slate-100;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 align-middle text-slate-700;
+  }
+
+  .data-table tbody tr {
+    @apply hover:bg-brand-50/40;
+  }
+
+  .stat-label {
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  .stat-value {
+    @apply mt-1 text-lg font-semibold text-ink;
+  }
+
+  .empty-state {
+    @apply rounded-2xl border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center text-slate-600;
+  }
+
+  .file-input {
+    @apply mt-2 block w-full text-sm text-slate-600 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-800;
+  }
+}

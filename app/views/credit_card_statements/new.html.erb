@@ -1,0 +1,26 @@
+<% content_for :title, "Import credit card statement" %>
+
+<div class="mx-auto max-w-xl space-y-6">
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to "← Credit card statements", credit_card_statements_path, class: "hover:text-brand-700" %>
+    </p>
+    <h1 class="page-title mt-2">Import credit card year-end statement</h1>
+    <p class="page-subtitle leading-relaxed">
+      Upload a Bank of America year-end summary PDF or a CSV from the statement gem.
+    </p>
+  </div>
+
+  <%= form_with url: credit_card_statements_path, method: :post, multipart: true, class: "card-pad space-y-5" do %>
+    <div>
+      <label for="file" class="block text-sm font-semibold text-ink">Statement file</label>
+      <p class="mt-1 text-xs text-muted">Accepted formats: PDF, CSV</p>
+      <%= file_field_tag :file, accept: ".pdf,.csv,application/pdf,text/csv", required: true, class: "file-input" %>
+    </div>
+
+    <div class="flex flex-wrap gap-3 pt-1">
+      <%= submit_tag "Import", class: "btn-primary cursor-pointer" %>
+      <%= link_to "Cancel", credit_card_statements_path, class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>

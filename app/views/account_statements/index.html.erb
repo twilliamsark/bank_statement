@@ -1,0 +1,59 @@
+<% content_for :title, "Account statements" %>
+
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Checking &amp; savings</p>
+      <h1 class="page-title">Bank account statements</h1>
+      <p class="page-subtitle">Imported statement summaries and balances.</p>
+    </div>
+    <%= link_to "Import statement", new_account_statement_path, class: "btn-primary" %>
+  </div>
+
+  <% if @account_statements.any? %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Account</th>
+            <th>Format</th>
+            <th>Transactions</th>
+            <th class="text-right"> </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @account_statements.each do |statement| %>
+            <tr>
+              <td class="whitespace-nowrap font-medium text-ink">
+                <% if statement.period_start || statement.period_end %>
+                  <%= display_date(statement.period_start) %> – <%= display_date(statement.period_end) %>
+                <% else %>
+                  <span class="text-muted">—</span>
+                <% end %>
+              </td>
+              <td><%= display_text(statement.account_name) %></td>
+              <td>
+                <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  <%= display_text(statement.import_format) %>
+                </span>
+              </td>
+              <td><%= statement.account_transactions.size %></td>
+              <td class="text-right">
+                <%= link_to "View", account_statement_path(statement), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <p class="text-base font-medium text-ink">No account statements yet</p>
+      <p class="mt-1 text-sm">Import a Bank of America PDF or CSV to get started.</p>
+      <div class="mt-5">
+        <%= link_to "Import statement", new_account_statement_path, class: "btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,60 @@
+<% content_for :title, "Credit card statement" %>
+
+<div class="space-y-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-sm text-muted">
+        <%= link_to "← Credit card statements", credit_card_statements_path, class: "hover:text-brand-700" %>
+      </p>
+      <h1 class="page-title mt-2">
+        <%= @credit_card_statement.statement_year.present? ? "#{@credit_card_statement.statement_year} year-end summary" : "Credit card statement" %>
+      </h1>
+      <p class="page-subtitle">
+        <%= display_text(@credit_card_statement.source_filename) %>
+        · <span class="uppercase"><%= display_text(@credit_card_statement.import_format) %></span>
+        · <%= display_text(@credit_card_statement.page_count) %> pages
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to "View transactions", credit_card_statement_transactions_path(@credit_card_statement), class: "btn-primary" %>
+      <%= button_to "Delete",
+            credit_card_statement_path(@credit_card_statement),
+            method: :delete,
+            form: { data: { turbo_confirm: "Delete this statement and its transactions?" } },
+            class: "btn-danger cursor-pointer" %>
+    </div>
+  </div>
+
+  <section class="card-pad bg-gradient-to-br from-white to-brand-50">
+    <p class="stat-label">Total spend</p>
+    <p class="mt-2 text-3xl font-semibold tracking-tight text-ink"><%= cents_to_currency(@credit_card_statement.total_spend_cents) %></p>
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Category / subcategory totals</h2>
+    <% if @category_totals.any? %>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Subcategory</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @category_totals.sort_by { |(category, subcategory), _| [category, subcategory] }.each do |(category, subcategory), total_cents| %>
+              <tr>
+                <td class="font-medium text-ink"><%= category %></td>
+                <td><%= subcategory %></td>
+                <td class="text-right font-medium text-ink"><%= cents_to_currency(total_cents) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-8">No transactions on this statement.</div>
+    <% end %>
+  </section>
+</div>

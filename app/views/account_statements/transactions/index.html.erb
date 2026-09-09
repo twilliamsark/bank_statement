@@ -1,0 +1,19 @@
+<% content_for :title, "Account transactions" %>
+
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-sm text-muted">
+        <%= link_to "← Statement summary", account_statement_path(@account_statement), class: "hover:text-brand-700" %>
+      </p>
+      <h1 class="page-title mt-2">Transactions</h1>
+      <p class="page-subtitle"><%= pluralize(@transactions.size, "transaction") %></p>
+    </div>
+  </div>
+
+  <% if @transactions.any? %>
+    <%= render "account_statements/transactions/table", transactions: @transactions %>
+  <% else %>
+    <div class="empty-state">No transactions.</div>
+  <% end %>
+</div>

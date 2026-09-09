@@ -1,0 +1,55 @@
+<% content_for :title, "Credit card statements" %>
+
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Year-end summary</p>
+      <h1 class="page-title">Credit card statements</h1>
+      <p class="page-subtitle">Category spend and imported year-end files.</p>
+    </div>
+    <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+  </div>
+
+  <% if @credit_card_statements.any? %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>File</th>
+            <th>Format</th>
+            <th class="text-right">Total spend</th>
+            <th>Transactions</th>
+            <th class="text-right"> </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @credit_card_statements.each do |statement| %>
+            <tr>
+              <td class="font-semibold text-ink"><%= display_text(statement.statement_year) %></td>
+              <td><%= display_text(statement.source_filename) %></td>
+              <td>
+                <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  <%= display_text(statement.import_format) %>
+                </span>
+              </td>
+              <td class="text-right font-medium text-ink"><%= cents_to_currency(statement.total_spend_cents) %></td>
+              <td><%= statement.credit_card_transactions.size %></td>
+              <td class="text-right">
+                <%= link_to "View", credit_card_statement_path(statement), class: "font-semibold text-brand-700 hover:text-brand-800" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <p class="text-base font-medium text-ink">No credit card statements yet</p>
+      <p class="mt-1 text-sm">Import a year-end PDF or CSV to see category spend.</p>
+      <div class="mt-5">
+        <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>

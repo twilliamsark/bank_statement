@@ -1,0 +1,92 @@
+<% content_for :title, "Account statement" %>
+
+<div class="space-y-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-sm text-muted">
+        <%= link_to "← Account statements", account_statements_path, class: "hover:text-brand-700" %>
+      </p>
+      <h1 class="page-title mt-2"><%= display_text(@account_statement.account_name) %></h1>
+      <p class="page-subtitle">
+        <%= display_text(@account_statement.source_filename) %>
+        · <span class="uppercase"><%= display_text(@account_statement.import_format) %></span>
+      </p>
+      <% if @account_statement.import_format == "csv" %>
+        <p class="mt-3 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
+          Summary balances unavailable from CSV — transaction detail is complete
+        </p>
+      <% end %>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to "View transactions", account_statement_transactions_path(@account_statement), class: "btn-primary" %>
+      <%= button_to "Delete",
+            account_statement_path(@account_statement),
+            method: :delete,
+            form: { data: { turbo_confirm: "Delete this statement and its transactions?" } },
+            class: "btn-danger cursor-pointer" %>
+    </div>
+  </div>
+
+  <section class="grid gap-4 sm:grid-cols-3">
+    <div class="card-pad">
+      <p class="stat-label">Account number</p>
+      <p class="stat-value text-base"><%= display_text(@account_statement.account_number) %></p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Period</p>
+      <p class="stat-value text-base">
+        <%= display_date(@account_statement.period_start) %> – <%= display_date(@account_statement.period_end) %>
+      </p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Pages</p>
+      <p class="stat-value text-base"><%= display_text(@account_statement.page_count) %></p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-2">
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-ink">Balances</h2>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <tbody>
+            <tr><th class="w-1/2 text-left font-medium text-slate-500">Beginning balance</th><td class="text-right font-medium text-ink"><%= cents_to_currency(@account_statement.beginning_balance_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Deposits</th><td class="text-right"><%= cents_to_currency(@account_statement.deposits_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Withdrawals</th><td class="text-right"><%= cents_to_currency(@account_statement.withdrawals_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Checks</th><td class="text-right"><%= cents_to_currency(@account_statement.checks_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Service fees</th><td class="text-right"><%= cents_to_currency(@account_statement.service_fees_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Ending balance</th><td class="text-right text-base font-semibold text-ink"><%= cents_to_currency(@account_statement.ending_balance_cents) %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">APY earned</th><td class="text-right"><%= @account_statement.apy_earned.present? ? "#{@account_statement.apy_earned}%" : "—" %></td></tr>
+            <tr><th class="text-left font-medium text-slate-500">Interest paid YTD</th><td class="text-right"><%= cents_to_currency(@account_statement.interest_paid_ytd_cents) %></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-ink">Section totals</h2>
+      <% if @section_totals.any? %>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @section_totals.each do |section, total_cents| %>
+                <tr>
+                  <td><%= section %></td>
+                  <td class="text-right font-medium text-ink"><%= cents_to_currency(total_cents) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="empty-state py-8">No transactions on this statement.</div>
+      <% end %>
+    </div>
+  </section>
+</div>
