@@ -13,9 +13,12 @@
       </p>
     </div>
     <div class="flex flex-wrap gap-2">
+      <%= link_to "View transactions",
+            credit_card_account_transactions_path(@credit_card_account),
+            class: "btn-primary" %>
       <%= link_to "Import statement",
             new_credit_card_statement_path(credit_card_account_id: @credit_card_account.id),
-            class: "btn-primary" %>
+            class: "btn-secondary" %>
     </div>
   </div>
 

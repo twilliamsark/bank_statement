@@ -3,6 +3,9 @@
     <thead>
       <tr>
         <th>Date</th>
+        <% if local_assigns.fetch(:show_statement, false) %>
+          <th>Statement</th>
+        <% end %>
         <th>Category</th>
         <th>Subcategory</th>
         <th>Description</th>
@@ -14,6 +17,17 @@
       <% transactions.each do |txn| %>
         <tr>
           <td class="whitespace-nowrap"><%= display_date(txn.date) %></td>
+          <% if local_assigns.fetch(:show_statement, false) %>
+            <td class="whitespace-nowrap text-sm">
+              <%= link_to credit_card_statement_path(txn.credit_card_statement), class: "font-medium text-brand-700 hover:text-brand-800" do %>
+                <% if txn.credit_card_statement.statement_year.present? %>
+                  <%= txn.credit_card_statement.statement_year %>
+                <% else %>
+                  <%= display_text(txn.credit_card_statement.source_filename) %>
+                <% end %>
+              <% end %>
+            </td>
+          <% end %>
           <td><%= txn.category %></td>
           <td><%= txn.subcategory %></td>
           <td class="max-w-md"><%= txn.description %></td>

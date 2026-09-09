@@ -5,7 +5,7 @@ Depends on: [`SPEC_STEP_4_7.md`](./SPEC_STEP_4_7.md) (CC account identity)
 Bank parallel: [`SPEC_STEP_4_5.md`](./SPEC_STEP_4_5.md)  
 Filters: [`SPEC_STEP_4.md`](./SPEC_STEP_4.md)
 
-Status: **Not started** (spec only)
+Status: **Complete** (master CC transactions + filters green)
 
 ---
 
@@ -78,13 +78,28 @@ Same as current transaction lists: 50/page; footer **Total** = sum of filtered `
 
 ## Acceptance checklist (Step 4.8)
 
-- [ ] Master CC txn path for one `CreditCardAccount`  
-- [ ] Unions all statements for that account only  
-- [ ] Step 4 filter + live-filter + Turbo Frame parity  
-- [ ] Statement context link/column  
-- [ ] Pagination + filter-aware total  
-- [ ] Linked from CC account UI (4.7)  
-- [ ] Integration tests green  
+- [x] Master CC txn path for one `CreditCardAccount`  
+- [x] Unions all statements for that account only  
+- [x] Step 4 filter + live-filter + Turbo Frame parity  
+- [x] Statement context link/column  
+- [x] Pagination + filter-aware total  
+- [x] Linked from CC account UI (4.7)  
+- [x] Integration tests green  
+
+---
+
+## What you get
+
+- **`/credit_card_accounts/:id/transactions`** — all transactions for one named card across statements
+- Same filters as statement-scoped CC lists (date, category, subcategory, live description/amount)
+- Statement year column with link back to each statement
+- Pagination + filter-aware **Total**
+- **View transactions** on card show / index
+
+### Implementation notes
+
+- Shared `shared/credit_card_transaction_filters` used by statement-scoped and master views
+- `CreditCardAccounts::TransactionsController` scopes via `has_many :credit_card_transactions, through: :credit_card_statements`
 
 ---
 

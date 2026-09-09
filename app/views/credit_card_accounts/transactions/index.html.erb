@@ -1,0 +1,31 @@
+<% content_for :title, "#{@credit_card_account.name} transactions" %>
+
+<div class="space-y-6">
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to "← #{@credit_card_account.name}", credit_card_account_path(@credit_card_account), class: "hover:text-brand-700" %>
+    </p>
+    <h1 class="page-title mt-2"><%= @credit_card_account.name %></h1>
+    <p class="page-subtitle">
+      <%= pluralize(@credit_card_account.credit_card_statements.count, "statement") %>
+      · all transactions for this card
+    </p>
+  </div>
+
+  <%= render "shared/credit_card_transaction_filters",
+        form_url: credit_card_account_transactions_path(@credit_card_account),
+        clear_url: credit_card_account_transactions_path(@credit_card_account),
+        categories: @categories,
+        subcategories: @subcategories,
+        filtered: @filtered %>
+
+  <%= turbo_frame_tag "transactions" do %>
+    <%= render "credit_card_accounts/transactions/results",
+          transactions: @transactions,
+          total_count: @total_count,
+          filtered_count: @filtered_count,
+          amount_total_cents: @amount_total_cents,
+          pagination: @pagination,
+          filtered: @filtered %>
+  <% end %>
+</div>
