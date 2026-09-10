@@ -12,6 +12,18 @@
 bin/setup
 ```
 
+To develop this app against local clones of the companion gems instead of the pinned Git revisions in `Gemfile.lock`, point Bundler at the sibling checkouts:
+
+```sh
+bundle config set local.bank_account_statements ../bank_account_statements
+bundle config set local.cc_year_end_statement ../cc_year_end_statement
+```
+
+CI troubleshooting:
+
+- GitHub Actions checks out only this repository, so companion gems must stay resolvable from the Git sources recorded in `Gemfile` and `Gemfile.lock`.
+- The `bundle config set local.* ...` commands above are local overrides for development only and should not be committed as path-based Gemfile entries.
+
 ## Run The App
 
 ```sh

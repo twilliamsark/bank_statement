@@ -1,12 +1,16 @@
-PATH
-  remote: ../bank_account_statements
+GIT
+  remote: https://github.com/twilliamsark/bank_account_statements.git
+  revision: 88b2f2df3c07a9c93b08d95da786a79cbe32850c
+  branch: main
   specs:
     bank_account_statements (0.1.0)
       csv
       pdf-reader
 
-PATH
-  remote: ../cc_year_end_statement
+GIT
+  remote: https://github.com/twilliamsark/cc_year_end_statement.git
+  revision: cd649b8ef47067fd8c3bc8b440533922b380d305
+  branch: main
   specs:
     cc_year_end_statement (0.1.0)
       csv

@@ -42,8 +42,13 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
-gem "bank_account_statements", path: "../bank_account_statements", require: "bank_account_statement"
-gem "cc_year_end_statement", path: "../cc_year_end_statement"
+gem "bank_account_statements",
+  git: "https://github.com/twilliamsark/bank_account_statements.git",
+  branch: "main",
+  require: "bank_account_statement"
+gem "cc_year_end_statement",
+  git: "https://github.com/twilliamsark/cc_year_end_statement.git",
+  branch: "main"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
