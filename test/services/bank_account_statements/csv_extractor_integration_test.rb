@@ -16,7 +16,7 @@ class BankAccountStatementsCSVExtractorIntegrationTest < ActiveSupport::TestCase
       assert_equal "0.1.0", BankAccountStatement::VERSION
       assert_equal path, result.filename
       assert_nil result.page_count
-      assert_equal ["Deposits and other additions"], result.sections.map(&:name)
+      assert_equal [ "Deposits and other additions" ], result.sections.map(&:name)
       assert_equal BigDecimal("1500.00"), result.sections.first.total
       assert_equal 1, result.transactions.size
       assert_equal "PAYROLL", result.transactions.first.description

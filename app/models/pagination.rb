@@ -8,7 +8,7 @@ class Pagination
   def initialize(page:, total_count:, per_page: DEFAULT_PER_PAGE)
     @per_page = per_page
     @total_count = total_count.to_i
-    @page = [[ page.to_i, 1 ].max, total_pages].min
+    @page = [ [ page.to_i, 1 ].max, total_pages ].min
     @page = 1 if @page < 1
   end
 
