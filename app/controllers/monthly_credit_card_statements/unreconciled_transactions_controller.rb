@@ -9,6 +9,8 @@ module MonthlyCreditCardStatements
       @unreconciled_transactions = @monthly_credit_card_statement
         .unreconciled_transactions
         .order(:date, :id)
+      @ready_to_save_count = @unreconciled_transactions.count { |txn| txn.category.present? && txn.subcategory.present? }
     end
   end
 end
+

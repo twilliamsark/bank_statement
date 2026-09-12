@@ -4,10 +4,12 @@ class CreditCardTransaction < ApplicationRecord
   include FilterableTransactions
   include ImportFingerprintable
 
-  belongs_to :credit_card_statement
+  belongs_to :credit_card_statement, optional: true
+  belongs_to :monthly_credit_card_statement, optional: true
 
   validates :date, :description, :category, :subcategory, :checksum, presence: true
   validates :amount_cents, presence: true, numericality: { only_integer: true }
+  validate :exactly_one_parent_statement
 
   before_validation :assign_checksum, if: -> { checksum.blank? }
 
@@ -38,7 +40,18 @@ class CreditCardTransaction < ApplicationRecord
     Digest::SHA256.hexdigest(payload)
   end
 
+  def parent_statement
+    credit_card_statement || monthly_credit_card_statement
+  end
+
   private
+
+  def exactly_one_parent_statement
+    parents = [ credit_card_statement_id, monthly_credit_card_statement_id ].count(&:present?)
+    return if parents == 1
+
+    errors.add(:base, "must belong to exactly one of credit card statement or monthly credit card statement")
+  end
 
   def assign_checksum
     return if date.blank? || category.blank? || subcategory.blank? || description.blank? || amount_cents.nil?

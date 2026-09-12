@@ -3,7 +3,7 @@
 class CreditCardAccountsController < ApplicationController
   def index
     @credit_card_accounts = CreditCardAccount.order(:name)
-      .includes(:credit_card_statements, :credit_card_transactions)
+      .includes(:credit_card_statements, :credit_card_transactions, :monthly_credit_card_statements, :monthly_credit_card_transactions)
   end
 
   def show
@@ -19,7 +19,7 @@ class CreditCardAccountsController < ApplicationController
       .detect { |statement| statement.unreconciled_transactions.any? }
     # Keep @statements alias for existing view/tests that mean year-end rows.
     @statements = @year_end_statements
-    txns = @credit_card_account.credit_card_transactions
+    txns = @credit_card_account.all_credit_card_transactions
     @category_totals = txns.group(:category, :subcategory).sum(:amount_cents)
     @total_spend_cents = txns.sum(:amount_cents)
     @transaction_count = txns.count

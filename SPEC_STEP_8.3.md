@@ -4,7 +4,7 @@ Parent: [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (overall Step 8 design)
 Prior: [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md), [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md)  
 Next: [`SPEC_STEP_8.4.md`](./SPEC_STEP_8.4.md) (manual category/subcategory dropdowns)
 
-Status: **Not started**
+Status: **Complete**
 
 ---
 

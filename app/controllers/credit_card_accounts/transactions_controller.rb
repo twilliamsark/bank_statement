@@ -4,14 +4,14 @@ module CreditCardAccounts
   class TransactionsController < ApplicationController
     def index
       @credit_card_account = CreditCardAccount.find(params[:credit_card_account_id])
-      base = @credit_card_account.credit_card_transactions
+      base = @credit_card_account.all_credit_card_transactions
       @total_count = base.count
       filtered = CreditCardTransaction.apply_filters(base, filter_params)
       @filtered_count = filtered.count
       @amount_total_cents = filtered.sum(:amount_cents)
       @pagination = Pagination.new(page: params[:page], total_count: @filtered_count)
       @transactions = filtered
-        .includes(:credit_card_statement)
+        .includes(:credit_card_statement, :monthly_credit_card_statement)
         .order(:date, :id)
         .offset(@pagination.offset)
         .limit(@pagination.limit)

@@ -58,6 +58,47 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_equal account.id, MonthlyCreditCardStatement.order(:id).last.credit_card_account_id
   end
 
+  test "save reconciled commits categorized staging rows" do
+    account = create_credit_card_account!(name: "Travel Card")
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 10),
+      description: "HOTEL READY",
+      amount_cents: 10000,
+      category: "Travel and Transportation",
+      subcategory: "Hotels"
+    )
+    monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 11),
+      description: "STILL OPEN",
+      amount_cents: 500
+    )
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    assert_response :success
+    assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly)
+
+    assert_difference -> { CreditCardTransaction.count }, 1 do
+      assert_difference -> { UnreconciledTransaction.count }, -1 do
+        post monthly_credit_card_statement_save_reconciled_path(monthly)
+      end
+    end
+
+    assert_redirected_to monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    follow_redirect!
+    assert_match(/Saved 1 transactions/, flash[:notice])
+    assert_match "STILL OPEN", response.body
+    assert_no_match(/HOTEL READY/, response.body)
+
+    committed = CreditCardTransaction.find_by!(description: "HOTEL READY")
+    assert_equal monthly.id, committed.monthly_credit_card_statement_id
+    assert_nil committed.credit_card_statement_id
+  end
+
   test "auto reconcile fills matching categories on unreconciled list" do
     account = create_credit_card_account!(name: "Travel Card")
     year_end = CreditCardStatement.create!(

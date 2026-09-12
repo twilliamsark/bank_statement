@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_193922) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_201700) do
   create_table "account_statements", force: :cascade do |t|
     t.integer "account_id"
     t.string "account_name"
@@ -115,11 +115,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_193922) do
     t.string "category", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
-    t.integer "credit_card_statement_id", null: false
+    t.integer "credit_card_statement_id"
     t.date "date", null: false
     t.text "description", null: false
     t.string "import_fingerprint"
     t.string "location", default: "", null: false
+    t.integer "monthly_credit_card_statement_id"
     t.string "subcategory", null: false
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_credit_card_transactions_on_category"
@@ -127,6 +128,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_193922) do
     t.index ["credit_card_statement_id"], name: "index_credit_card_transactions_on_credit_card_statement_id"
     t.index ["date"], name: "index_credit_card_transactions_on_date"
     t.index ["description"], name: "index_credit_card_transactions_on_description"
+    t.index ["monthly_credit_card_statement_id"], name: "idx_on_monthly_credit_card_statement_id_403131e787"
     t.index ["subcategory"], name: "index_credit_card_transactions_on_subcategory"
   end
 
@@ -165,6 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_193922) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "credit_card_statements", "credit_card_accounts"
   add_foreign_key "credit_card_transactions", "credit_card_statements"
+  add_foreign_key "credit_card_transactions", "monthly_credit_card_statements"
   add_foreign_key "monthly_credit_card_statements", "credit_card_accounts"
   add_foreign_key "unreconciled_transactions", "monthly_credit_card_statements"
 end

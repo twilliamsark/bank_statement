@@ -28,8 +28,8 @@
           <% @credit_card_accounts.each do |account| %>
             <tr>
               <td class="font-medium text-ink"><%= account.name %></td>
-              <td><%= account.credit_card_statements.size %></td>
-              <td><%= account.credit_card_transactions.size %></td>
+              <td><%= account.credit_card_statements.size + account.monthly_credit_card_statements.size %></td>
+              <td><%= account.credit_card_transactions.size + account.monthly_credit_card_transactions.size %></td>
               <td class="space-x-3 text-right">
                 <%= link_to "View", credit_card_account_path(account), class: "font-semibold text-brand-700 hover:text-brand-800" %>
                 <%= link_to "Transactions", credit_card_account_transactions_path(account), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>

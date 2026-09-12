@@ -19,12 +19,20 @@
           <td class="whitespace-nowrap"><%= display_date(txn.date) %></td>
           <% if local_assigns.fetch(:show_statement, false) %>
             <td class="whitespace-nowrap text-sm">
-              <%= link_to credit_card_statement_path(txn.credit_card_statement), class: "font-medium text-brand-700 hover:text-brand-800" do %>
-                <% if txn.credit_card_statement.statement_year.present? %>
-                  <%= txn.credit_card_statement.statement_year %>
-                <% else %>
-                  <%= display_text(txn.credit_card_statement.source_filename) %>
+              <% if txn.credit_card_statement %>
+                <%= link_to credit_card_statement_path(txn.credit_card_statement), class: "font-medium text-brand-700 hover:text-brand-800" do %>
+                  <% if txn.credit_card_statement.statement_year.present? %>
+                    <%= txn.credit_card_statement.statement_year %>
+                  <% else %>
+                    <%= display_text(txn.credit_card_statement.source_filename) %>
+                  <% end %>
                 <% end %>
+              <% elsif txn.monthly_credit_card_statement %>
+                <%= link_to monthly_credit_card_statement_path(txn.monthly_credit_card_statement), class: "font-medium text-brand-700 hover:text-brand-800" do %>
+                  <%= display_text(txn.monthly_credit_card_statement.source_filename) %>
+                <% end %>
+              <% else %>
+                —
               <% end %>
             </td>
           <% end %>

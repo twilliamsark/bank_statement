@@ -16,14 +16,24 @@
         <% end %>
         · <%= display_text(@monthly_credit_card_statement.source_filename) %>
         · <%= pluralize(@unreconciled_transactions.size, "transaction") %>
+        <% if @ready_to_save_count.positive? %>
+          · <%= pluralize(@ready_to_save_count, "ready to save") %>
+        <% end %>
       </p>
     </div>
     <div class="flex flex-wrap gap-2">
+      <% if @ready_to_save_count.positive? %>
+        <%= button_to "Save Reconciled",
+              monthly_credit_card_statement_save_reconciled_path(@monthly_credit_card_statement),
+              method: :post,
+              class: "btn-primary cursor-pointer",
+              form: { data: { turbo_submits_with: "Saving…" } } %>
+      <% end %>
       <% if @unreconciled_transactions.any? %>
         <%= button_to "Auto Reconcile",
               monthly_credit_card_statement_auto_reconcile_path(@monthly_credit_card_statement),
               method: :post,
-              class: "btn-primary cursor-pointer",
+              class: "btn-secondary cursor-pointer",
               form: { data: { turbo_submits_with: "Reconciling…" } } %>
       <% end %>
       <%= link_to "Import Monthly Statement",
@@ -58,11 +68,18 @@
       </table>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex flex-wrap justify-end gap-2">
+      <% if @ready_to_save_count.positive? %>
+        <%= button_to "Save Reconciled",
+              monthly_credit_card_statement_save_reconciled_path(@monthly_credit_card_statement),
+              method: :post,
+              class: "btn-primary cursor-pointer",
+              form: { data: { turbo_submits_with: "Saving…" } } %>
+      <% end %>
       <%= button_to "Auto Reconcile",
             monthly_credit_card_statement_auto_reconcile_path(@monthly_credit_card_statement),
             method: :post,
-            class: "btn-primary cursor-pointer",
+            class: "btn-secondary cursor-pointer",
             form: { data: { turbo_submits_with: "Reconciling…" } } %>
     </div>
   <% else %>

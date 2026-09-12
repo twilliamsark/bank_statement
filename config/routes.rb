@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   resources :monthly_credit_card_statements, only: %i[index show new create destroy] do
     resources :unreconciled_transactions, only: :index, module: :monthly_credit_card_statements
     resource :auto_reconcile, only: :create, module: :monthly_credit_card_statements
+    resource :save_reconciled, only: :create, module: :monthly_credit_card_statements
   end
 end
 

@@ -5,6 +5,8 @@ class MonthlyCreditCardStatement < ApplicationRecord
 
   has_one_attached :source_file
   has_many :unreconciled_transactions, dependent: :destroy
+  has_many :credit_card_transactions, dependent: :destroy
 
   validates :import_format, inclusion: { in: %w[pdf csv] }, allow_nil: true
 end
+
