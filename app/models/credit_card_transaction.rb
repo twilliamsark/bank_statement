@@ -9,6 +9,7 @@ class CreditCardTransaction < ApplicationRecord
   validates :amount_cents, presence: true, numericality: { only_integer: true }
 
   before_validation :assign_checksum, if: -> { checksum.blank? }
+  before_validation :assign_import_fingerprint, if: -> { import_fingerprint.blank? }
 
   scope :for_category, ->(category) {
     category.present? ? where(category: category) : all
@@ -37,7 +38,27 @@ class CreditCardTransaction < ApplicationRecord
     Digest::SHA256.hexdigest(payload)
   end
 
+  def self.import_fingerprint_for(date:, description:, amount_cents:)
+    payload = [
+      date.to_s,
+      description[..21],
+      amount_cents.to_i
+    ].join("|")
+
+    Digest::MD5.hexdigest(payload)
+  end
+
   private
+
+  def assign_import_fingerprint
+    return if date.blank? || description.blank? || amount_cents.nil?
+
+    self.import_fingerprint = self.class.import_fingerprint_for(
+      date: date,
+      description: description,
+      amount_cents: amount_cents
+    )
+  end
 
   def assign_checksum
     return if date.blank? || category.blank? || subcategory.blank? || description.blank? || amount_cents.nil?

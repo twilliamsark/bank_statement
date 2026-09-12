@@ -46,6 +46,10 @@ gem "bank_account_statements",
   git: "https://github.com/twilliamsark/bank_account_statements.git",
   branch: "main",
   require: "bank_account_statement"
+gem "cc_account_statements",
+  git: "https://github.com/twilliamsark/cc_account_statements.git",
+  branch: "main",
+  require: "cc_account_statement"
 gem "cc_year_end_statement",
   git: "https://github.com/twilliamsark/cc_year_end_statement.git",
   branch: "main"

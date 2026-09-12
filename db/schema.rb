@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_09_183752) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_212606) do
   create_table "account_statements", force: :cascade do |t|
     t.integer "account_id"
     t.string "account_name"
@@ -118,6 +118,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_183752) do
     t.integer "credit_card_statement_id", null: false
     t.date "date", null: false
     t.text "description", null: false
+    t.string "import_fingerprint"
     t.string "location", default: "", null: false
     t.string "subcategory", null: false
     t.datetime "updated_at", null: false
