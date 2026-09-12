@@ -3,25 +3,33 @@
 <div class="space-y-6">
   <div>
     <p class="text-sm text-muted">
-      <%= link_to "← Statement summary", credit_card_statement_path(@credit_card_statement), class: "hover:text-brand-700" %>
+      <%= link_to(
+        "← Statement summary",
+        credit_card_statement_path(@credit_card_statement),
+        class: "hover:text-brand-700"
+      ) %>
     </p>
     <h1 class="page-title mt-2">Transactions</h1>
     <p class="page-subtitle"><%= display_text(@credit_card_statement.source_filename) %></p>
   </div>
 
-  <%= render "credit_card_statements/transactions/filters",
-        credit_card_statement: @credit_card_statement,
-        categories: @categories,
-        subcategories: @subcategories,
-        filtered: @filtered %>
+  <%= render(
+    "credit_card_statements/transactions/filters",
+    credit_card_statement: @credit_card_statement,
+    categories: @categories,
+    subcategories: @subcategories,
+    filtered: @filtered
+  ) %>
 
   <%= turbo_frame_tag "transactions" do %>
-    <%= render "credit_card_statements/transactions/results",
-          transactions: @transactions,
-          total_count: @total_count,
-          filtered_count: @filtered_count,
-          amount_total_cents: @amount_total_cents,
-          pagination: @pagination,
-          filtered: @filtered %>
+    <%= render(
+      "credit_card_statements/transactions/results",
+      transactions: @transactions,
+      total_count: @total_count,
+      filtered_count: @filtered_count,
+      amount_total_cents: @amount_total_cents,
+      pagination: @pagination,
+      filtered: @filtered
+    ) %>
   <% end %>
 </div>

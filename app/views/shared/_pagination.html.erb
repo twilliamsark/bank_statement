@@ -1,3 +1,4 @@
+<% frame = local_assigns.fetch(:turbo_frame, "transactions") %>
 <% if pagination.paginate? %>
   <nav class="flex flex-col gap-3 border-t border-line pt-4 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between" aria-label="Pagination">
     <p class="text-muted">
@@ -7,18 +8,37 @@
       <% if pagination.page > 1 %>
         <%= link_to "Previous",
               pagination_path_for(pagination.page - 1),
-              data: { turbo_frame: "transactions" },
+              data: { turbo_frame: frame },
               class: "btn-secondary" %>
       <% else %>
         <span class="btn-secondary pointer-events-none opacity-40">Previous</span>
       <% end %>
 
-      <span class="px-2 font-medium text-ink">Page <%= pagination.page %> of <%= pagination.total_pages %></span>
+      <%= form_with url: request.path,
+            method: :get,
+            local: true,
+            class: "flex items-center gap-2",
+            data: {
+              controller: "live-filter",
+              turbo_frame: frame
+            } do %>
+        <% request.query_parameters.except("page", :page).each do |key, value| %>
+          <%= hidden_field_tag key, value %>
+        <% end %>
+        <label for="pagination_page" class="font-medium text-ink">Page</label>
+        <%= select_tag :page,
+              options_for_select((1..pagination.total_pages).map { |n| [n, n] }, pagination.page),
+              id: "pagination_page",
+              class: "rounded-lg border border-line px-2 py-1.5 text-sm font-medium text-ink",
+              aria: { label: "Jump to page" },
+              data: { action: "change->live-filter#submitNow" } %>
+        <span class="text-muted">of <%= pagination.total_pages %></span>
+      <% end %>
 
       <% if pagination.page < pagination.total_pages %>
         <%= link_to "Next",
               pagination_path_for(pagination.page + 1),
-              data: { turbo_frame: "transactions" },
+              data: { turbo_frame: frame },
               class: "btn-secondary" %>
       <% else %>
         <span class="btn-secondary pointer-events-none opacity-40">Next</span>

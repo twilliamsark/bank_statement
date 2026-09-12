@@ -133,6 +133,84 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_redirected_to monthly_credit_card_statement_unreconciled_transactions_path(monthly)
   end
 
+  test "unreconciled pagination includes jump-to-page select" do
+    account = create_credit_card_account!(name: "Travel Card")
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    55.times do |i|
+      monthly.unreconciled_transactions.create!(
+        date: Date.new(2025, 8, 1),
+        description: "UNREC PAGE ROW #{i}",
+        amount_cents: 100 + i
+      )
+    end
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    assert_response :success
+    assert_select "select#pagination_page"
+    assert_select "select#pagination_page option", minimum: 2
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly), params: { page: 2, description: "UNREC PAGE" }
+    assert_response :success
+    assert_select "select#pagination_page option[selected]", text: "2"
+    assert_match(/Showing 51/, response.body)
+    assert_match "UNREC PAGE ROW", response.body
+  end
+
+  test "unreconciled list filters by description category and amount" do
+    account = create_credit_card_account!(name: "Travel Card")
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 1),
+      description: "HOTEL DOWNTOWN",
+      amount_cents: 10000,
+      category: "Travel and Transportation",
+      subcategory: "Hotels"
+    )
+    monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 2),
+      description: "COFFEE SHOP",
+      amount_cents: 450,
+      category: "Merchandise",
+      subcategory: "Restaurants"
+    )
+    monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 3),
+      description: "UNKNOWN MERCHANT",
+      amount_cents: 1200
+    )
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    assert_response :success
+    assert_select "form[data-controller='live-filter']"
+    assert_match "HOTEL DOWNTOWN", response.body
+    assert_match "COFFEE SHOP", response.body
+    assert_match "UNKNOWN MERCHANT", response.body
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly), params: { description: "hotel" }
+    assert_response :success
+    assert_match "HOTEL DOWNTOWN", response.body
+    assert_no_match(/COFFEE SHOP/, response.body)
+    assert_no_match(/UNKNOWN MERCHANT/, response.body)
+    assert_match(/1 match/, response.body)
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly), params: { category: "Merchandise" }
+    assert_match "COFFEE SHOP", response.body
+    assert_no_match(/HOTEL DOWNTOWN/, response.body)
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly), params: { amount: "12.00" }
+    assert_match "UNKNOWN MERCHANT", response.body
+    assert_no_match(/HOTEL DOWNTOWN/, response.body)
+    assert_no_match(/COFFEE SHOP/, response.body)
+  end
+
   test "unreconciled list shows guidance when no categories exist" do
     account = create_credit_card_account!(name: "Empty Card")
     monthly = MonthlyCreditCardStatement.create!(

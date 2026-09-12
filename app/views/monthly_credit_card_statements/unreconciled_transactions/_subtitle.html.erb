@@ -4,7 +4,7 @@
     · <%= display_date(@monthly_credit_card_statement.period_start) %> – <%= display_date(@monthly_credit_card_statement.period_end) %>
   <% end %>
   · <%= display_text(@monthly_credit_card_statement.source_filename) %>
-  · <%= pluralize(@unreconciled_transactions.size, "transaction") %>
+  · <%= pluralize(@total_count, "transaction") %>
   <% if @ready_to_save_count.positive? %>
     · <%= pluralize(@ready_to_save_count, "ready to save") %>
   <% end %>

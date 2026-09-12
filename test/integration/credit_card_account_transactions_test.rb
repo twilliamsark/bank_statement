@@ -75,6 +75,31 @@ class CreditCardAccountTransactionsTest < ActionDispatch::IntegrationTest
     assert_no_match(/STORE B/, response.body)
   end
 
+  test "pagination includes jump-to-page select and honors page param" do
+    statement = @year_two
+    55.times do |i|
+      statement.credit_card_transactions.create!(
+        date: Date.new(2025, 3, 1),
+        description: "PAGE JUMP ROW #{i}",
+        location: "",
+        amount_cents: 100 + i,
+        category: "Merchandise",
+        subcategory: "Clothing"
+      )
+    end
+
+    get credit_card_account_transactions_path(@account)
+    assert_response :success
+    assert_select "select#pagination_page"
+    assert_select "select#pagination_page option", minimum: 2
+    assert_match "PAGE JUMP ROW 0", response.body
+
+    get credit_card_account_transactions_path(@account), params: { page: 2 }
+    assert_response :success
+    assert_select "select#pagination_page option[selected]", text: "2"
+    assert_match(/Showing 51/, response.body)
+  end
+
   test "account show links to master transactions" do
     get credit_card_account_path(@account)
     assert_response :success

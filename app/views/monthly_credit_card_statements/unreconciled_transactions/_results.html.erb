@@ -1,0 +1,51 @@
+<div class="space-y-4">
+  <p class="text-sm text-muted">
+    <% if @filtered %>
+      <%= pluralize(@filtered_count, "match") %> of <%= pluralize(@total_count, "transaction") %>
+    <% else %>
+      <%= pluralize(@filtered_count, "transaction") %>
+    <% end %>
+    <% if @pagination.paginate? %>
+      · page <%= @pagination.page %> of <%= @pagination.total_pages %>
+    <% end %>
+  </p>
+
+  <% if @unreconciled_transactions.any? %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th class="text-right">Amount</th>
+            <th>Category / Subcategory</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @unreconciled_transactions.each do |txn| %>
+            <%= render "monthly_credit_card_statements/unreconciled_transactions/row", txn: txn %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%= render "shared/pagination", pagination: @pagination, turbo_frame: "unreconciled_transactions" %>
+    <%= render "shared/transaction_results_footer",
+          filtered: @filtered,
+          filtered_count: @filtered_count,
+          amount_total_cents: @amount_total_cents %>
+
+    <%= render "monthly_credit_card_statements/unreconciled_transactions/actions",
+          dom_id: "unreconciled_actions_bottom",
+          justify: "justify-end gap-2" %>
+  <% else %>
+    <div class="empty-state py-8">
+      <% if @filtered %>
+        No unreconciled transactions match these filters.
+      <% else %>
+        No unreconciled transactions on this statement.
+      <% end %>
+    </div>
+  <% end %>
+</div>

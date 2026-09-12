@@ -3,7 +3,7 @@
 module MonthlyCreditCardStatements
   class UnreconciledTransactionsController < ApplicationController
     before_action :set_monthly_credit_card_statement
-    before_action :set_category_options
+    before_action :set_edit_category_options
     before_action :set_unreconciled_transaction, only: :update
 
     def index
@@ -17,7 +17,10 @@ module MonthlyCreditCardStatements
       respond_to do |format|
         format.turbo_stream
         format.html do
-          redirect_to monthly_credit_card_statement_unreconciled_transactions_path(@monthly_credit_card_statement)
+          redirect_to monthly_credit_card_statement_unreconciled_transactions_path(
+            @monthly_credit_card_statement,
+            filter_params.to_h.compact_blank
+          )
         end
       end
     end
@@ -35,7 +38,7 @@ module MonthlyCreditCardStatements
         .find(params[:id])
     end
 
-    def set_category_options
+    def set_edit_category_options
       @categories = CreditCardTransaction.distinct.order(:category).pluck(:category)
       @subcategories_by_category = CreditCardTransaction
         .distinct
@@ -46,10 +49,25 @@ module MonthlyCreditCardStatements
     end
 
     def load_unreconciled_index
-      @unreconciled_transactions = @monthly_credit_card_statement
-        .unreconciled_transactions
-        .order(:date, :id)
-      @ready_to_save_count = @unreconciled_transactions.count { |txn| txn.category.present? && txn.subcategory.present? }
+      base = @monthly_credit_card_statement.unreconciled_transactions
+      @total_count = base.count
+      @ready_to_save_count = base.where.not(category: [ nil, "" ]).where.not(subcategory: [ nil, "" ]).count
+
+      filtered = UnreconciledTransaction.apply_filters(base, filter_params)
+      @filtered_count = filtered.count
+      @amount_total_cents = filtered.sum(:amount_cents)
+      @pagination = Pagination.new(page: params[:page], total_count: @filtered_count)
+      @unreconciled_transactions = filtered.order(:date, :id)
+        .offset(@pagination.offset)
+        .limit(@pagination.limit)
+
+      @filter_categories = base.where.not(category: [ nil, "" ]).distinct.order(:category).pluck(:category)
+      @filter_subcategories = base.where.not(subcategory: [ nil, "" ]).distinct.order(:subcategory).pluck(:subcategory)
+      @filtered = filter_params.to_h.values.any?(&:present?)
+    end
+
+    def filter_params
+      params.permit(:date_from, :date_to, :category, :subcategory, :description, :amount)
     end
 
     def unreconciled_transaction_params

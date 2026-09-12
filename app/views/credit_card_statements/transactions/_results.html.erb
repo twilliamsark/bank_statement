@@ -11,12 +11,17 @@
   </p>
 
   <% if transactions.any? %>
-    <%= render "credit_card_statements/transactions/table", transactions: transactions %>
+    <%= render(
+      "credit_card_statements/transactions/table",
+      transactions: transactions
+    ) %>
     <%= render "shared/pagination", pagination: pagination %>
-    <%= render "shared/transaction_results_footer",
-          filtered: filtered,
-          filtered_count: filtered_count,
-          amount_total_cents: amount_total_cents %>
+    <%= render(
+      "shared/transaction_results_footer",
+      filtered: filtered,
+      filtered_count: filtered_count,
+      amount_total_cents: amount_total_cents
+    ) %>
   <% else %>
     <div class="empty-state">
       <% if filtered %>

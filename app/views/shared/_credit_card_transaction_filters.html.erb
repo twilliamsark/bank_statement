@@ -1,10 +1,11 @@
+<% frame = local_assigns.fetch(:turbo_frame, "transactions") %>
 <%= form_with url: form_url,
       method: :get,
       local: true,
       data: {
         controller: "live-filter",
         live_filter_delay_value: 250,
-        turbo_frame: "transactions"
+        turbo_frame: frame
       },
       class: "card-pad space-y-4" do %>
   <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
@@ -14,7 +15,7 @@
     </div>
     <% if filtered %>
       <%= link_to "Clear filters", clear_url,
-            data: { turbo_frame: "transactions" },
+            data: { turbo_frame: frame },
             class: "shrink-0 text-sm font-semibold text-brand-700 hover:text-brand-800" %>
     <% end %>
   </div>

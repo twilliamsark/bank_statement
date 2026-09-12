@@ -22,30 +22,15 @@
     </div>
   <% end %>
 
-  <% if @unreconciled_transactions.any? %>
-    <div class="data-table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th class="text-right">Amount</th>
-            <th>Category / Subcategory</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @unreconciled_transactions.each do |txn| %>
-            <%= render "monthly_credit_card_statements/unreconciled_transactions/row", txn: txn %>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+  <%= render "shared/credit_card_transaction_filters",
+        form_url: monthly_credit_card_statement_unreconciled_transactions_path(@monthly_credit_card_statement),
+        clear_url: monthly_credit_card_statement_unreconciled_transactions_path(@monthly_credit_card_statement),
+        categories: @filter_categories,
+        subcategories: @filter_subcategories,
+        filtered: @filtered,
+        turbo_frame: "unreconciled_transactions" %>
 
-    <%= render "monthly_credit_card_statements/unreconciled_transactions/actions",
-          dom_id: "unreconciled_actions_bottom",
-          class: nil,
-          justify: "justify-end gap-2" %>
-  <% else %>
-    <div class="empty-state py-8">No unreconciled transactions on this statement.</div>
+  <%= turbo_frame_tag "unreconciled_transactions" do %>
+    <%= render "monthly_credit_card_statements/unreconciled_transactions/results" %>
   <% end %>
 </div>

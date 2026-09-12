@@ -2,6 +2,7 @@
 <% ready = txn.category.present? && txn.subcategory.present? %>
 
 <tr id="<%= dom_id(txn) %>" class="<%= ready ? "bg-brand-50/40" : nil %>">
+  <td class="whitespace-nowrap text-muted"><%= txn.id %></td>
   <td class="whitespace-nowrap"><%= display_date(txn.date) %></td>
   <td class="font-medium text-ink"><%= txn.description %></td>
   <td class="text-right font-medium text-ink"><%= cents_to_currency(txn.amount_cents) %></td>
@@ -15,6 +16,9 @@
             category_subcategory_options_value: @subcategories_by_category.to_json,
             turbo: true
           } do |f| %>
+      <% %i[date_from date_to category subcategory description amount page].each do |key| %>
+        <%= hidden_field_tag key, params[key] if params[key].present? %>
+      <% end %>
       <div class="min-w-[10rem] flex-1">
         <label class="sr-only" for="<%= dom_id(txn, :category) %>">Category</label>
         <%= f.select :category,

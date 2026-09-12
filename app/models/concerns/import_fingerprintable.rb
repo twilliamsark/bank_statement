@@ -10,7 +10,7 @@ module ImportFingerprintable
     end
 
     def category_match_prefix(description)
-      description.to_s[0, 9]
+      description.to_s[0, 8]
     end
   end
 

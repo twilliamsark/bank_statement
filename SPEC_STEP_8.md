@@ -11,6 +11,8 @@ Parent: Steps 1–7 complete (`SPEC.md` marked Complete). Step 8 is a **new scop
 | 8.2.1 | [`SPEC_STEP_8.2.1.md`](./SPEC_STEP_8.2.1.md) | Card summary: monthly statements above year-end + View Unreconciled entry points |
 | 8.3 | [`SPEC_STEP_8.3.md`](./SPEC_STEP_8.3.md) | Monthly FK on `CreditCardTransaction` + **Save Reconciled** (copy + delete staging) |
 | 8.4 | [`SPEC_STEP_8.4.md`](./SPEC_STEP_8.4.md) | Per-row category/subcategory dropdowns so remaining rows can be saved |
+| 8.4.1 | [`SPEC_STEP_8.4.1.md`](./SPEC_STEP_8.4.1.md) | Live filters on unreconciled list (same pattern as CC transactions) |
+| 8.4.2 | [`SPEC_STEP_8.4.2.md`](./SPEC_STEP_8.4.2.md) | Jump-to-page dropdown on CC + unreconciled pagination |
 | 8.5 | [`SPEC_STEP_8.5.md`](./SPEC_STEP_8.5.md) | Monthly statements index + summary `#show` + browse/Import entry points |
 | 8.6 | [`SPEC_STEP_8.6.md`](./SPEC_STEP_8.6.md) | Fingerprint **potential duplicate** flag on import; must clear before reconcile/save |
 | Later | TBD | Items still in parent Step 8 but not covered by 8.1–8.6 |
