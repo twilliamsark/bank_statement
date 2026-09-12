@@ -37,7 +37,9 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_match(/Staged 2 transactions/, flash[:notice])
     assert_match "STORE A", response.body
     assert_match "HOTEL", response.body
-    assert_select "td", text: "—" # blank category/subcategory display
+    assert_select "select[name=?]", "unreconciled_transaction[category]"
+    assert_select "select[name=?] option[value='']", "unreconciled_transaction[category]"
+    assert_select "select[name=?] option[value='']", "unreconciled_transaction[subcategory]"
   end
 
   test "import with existing account reuses it" do
@@ -56,6 +58,97 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal account.id, MonthlyCreditCardStatement.order(:id).last.credit_card_account_id
+  end
+
+  test "patching category and subcategory enables save reconciled" do
+    account = create_credit_card_account!(name: "Travel Card")
+    year_end = CreditCardStatement.create!(
+      credit_card_account: account,
+      statement_year: 2025,
+      source_filename: "year_end.csv",
+      import_format: "csv"
+    )
+    year_end.credit_card_transactions.create!(
+      date: Date.new(2025, 1, 10),
+      description: "SEED CATEGORY ROW",
+      location: "",
+      amount_cents: 100,
+      category: "Merchandise",
+      subcategory: "Clothing"
+    )
+    year_end.credit_card_transactions.create!(
+      date: Date.new(2025, 1, 11),
+      description: "SEED CATEGORY ROW TWO",
+      location: "",
+      amount_cents: 200,
+      category: "Merchandise",
+      subcategory: "Electronics"
+    )
+
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    staging = monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 10),
+      description: "NEEDS MANUAL CATEGORY",
+      amount_cents: 2500
+    )
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    assert_response :success
+    assert_select "select[name=?]", "unreconciled_transaction[category]"
+    assert_select "select[name=?]", "unreconciled_transaction[subcategory]"
+    assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly), count: 0
+
+    patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
+      unreconciled_transaction: { category: "Merchandise", subcategory: "Clothing" }
+    }
+    assert_response :redirect
+    follow_redirect!
+    staging.reload
+    assert_equal "Merchandise", staging.category
+    assert_equal "Clothing", staging.subcategory
+    assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly)
+
+    patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
+      unreconciled_transaction: { category: "Merchandise", subcategory: "" }
+    }
+    follow_redirect!
+    staging.reload
+    assert_equal "Merchandise", staging.category
+    assert_nil staging.subcategory
+
+    patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
+      unreconciled_transaction: { category: "Merchandise", subcategory: "Electronics" }
+    }
+    follow_redirect!
+
+    assert_difference -> { CreditCardTransaction.where(monthly_credit_card_statement_id: monthly.id).count }, 1 do
+      assert_difference -> { UnreconciledTransaction.count }, -1 do
+        post monthly_credit_card_statement_save_reconciled_path(monthly)
+      end
+    end
+    assert_redirected_to monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+  end
+
+  test "unreconciled list shows guidance when no categories exist" do
+    account = create_credit_card_account!(name: "Empty Card")
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 10),
+      description: "NO OPTIONS YET",
+      amount_cents: 100
+    )
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    assert_response :success
+    assert_match(/Import a year-end statement first/, response.body)
   end
 
   test "save reconciled commits categorized staging rows" do

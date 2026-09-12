@@ -1,0 +1,11 @@
+<%= turbo_stream.replace dom_id(@unreconciled_transaction),
+      partial: "monthly_credit_card_statements/unreconciled_transactions/row",
+      locals: { txn: @unreconciled_transaction } %>
+<%= turbo_stream.replace "unreconciled_subtitle",
+      partial: "monthly_credit_card_statements/unreconciled_transactions/subtitle" %>
+<%= turbo_stream.replace "unreconciled_actions_top",
+      partial: "monthly_credit_card_statements/unreconciled_transactions/actions",
+      locals: { dom_id: "unreconciled_actions_top", show_import: true } %>
+<%= turbo_stream.replace "unreconciled_actions_bottom",
+      partial: "monthly_credit_card_statements/unreconciled_transactions/actions",
+      locals: { dom_id: "unreconciled_actions_bottom", justify: "justify-end gap-2" } %>

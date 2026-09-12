@@ -1,0 +1,44 @@
+<% subcategories = txn.category.present? ? (@subcategories_by_category[txn.category] || []) : [] %>
+<% ready = txn.category.present? && txn.subcategory.present? %>
+
+<tr id="<%= dom_id(txn) %>" class="<%= ready ? "bg-brand-50/40" : nil %>">
+  <td class="whitespace-nowrap"><%= display_date(txn.date) %></td>
+  <td class="font-medium text-ink"><%= txn.description %></td>
+  <td class="text-right font-medium text-ink"><%= cents_to_currency(txn.amount_cents) %></td>
+  <td class="min-w-[22rem]">
+    <%= form_with model: txn,
+          url: monthly_credit_card_statement_unreconciled_transaction_path(@monthly_credit_card_statement, txn),
+          method: :patch,
+          class: "flex flex-wrap items-center gap-2",
+          data: {
+            controller: "category-subcategory",
+            category_subcategory_options_value: @subcategories_by_category.to_json,
+            turbo: true
+          } do |f| %>
+      <div class="min-w-[10rem] flex-1">
+        <label class="sr-only" for="<%= dom_id(txn, :category) %>">Category</label>
+        <%= f.select :category,
+              options_for_select(@categories, txn.category),
+              { include_blank: "—" },
+              id: dom_id(txn, :category),
+              class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm",
+              data: {
+                category_subcategory_target: "category",
+                action: "change->category-subcategory#categoryChanged"
+              } %>
+      </div>
+      <div class="min-w-[10rem] flex-1">
+        <label class="sr-only" for="<%= dom_id(txn, :subcategory) %>">Subcategory</label>
+        <%= f.select :subcategory,
+              options_for_select(subcategories, txn.subcategory),
+              { include_blank: "—" },
+              id: dom_id(txn, :subcategory),
+              class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm",
+              data: {
+                category_subcategory_target: "subcategory",
+                action: "change->category-subcategory#subcategoryChanged"
+              } %>
+      </div>
+    <% end %>
+  </td>
+</tr>

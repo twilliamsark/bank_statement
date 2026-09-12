@@ -9,38 +9,18 @@
               class: "hover:text-brand-700" %>
       </p>
       <h1 class="page-title mt-2">Unreconciled transactions</h1>
-      <p class="page-subtitle">
-        <%= @monthly_credit_card_statement.credit_card_account.name %>
-        <% if @monthly_credit_card_statement.period_start.present? || @monthly_credit_card_statement.period_end.present? %>
-          · <%= display_date(@monthly_credit_card_statement.period_start) %> – <%= display_date(@monthly_credit_card_statement.period_end) %>
-        <% end %>
-        · <%= display_text(@monthly_credit_card_statement.source_filename) %>
-        · <%= pluralize(@unreconciled_transactions.size, "transaction") %>
-        <% if @ready_to_save_count.positive? %>
-          · <%= pluralize(@ready_to_save_count, "ready to save") %>
-        <% end %>
-      </p>
+      <%= render "monthly_credit_card_statements/unreconciled_transactions/subtitle" %>
     </div>
-    <div class="flex flex-wrap gap-2">
-      <% if @ready_to_save_count.positive? %>
-        <%= button_to "Save Reconciled",
-              monthly_credit_card_statement_save_reconciled_path(@monthly_credit_card_statement),
-              method: :post,
-              class: "btn-primary cursor-pointer",
-              form: { data: { turbo_submits_with: "Saving…" } } %>
-      <% end %>
-      <% if @unreconciled_transactions.any? %>
-        <%= button_to "Auto Reconcile",
-              monthly_credit_card_statement_auto_reconcile_path(@monthly_credit_card_statement),
-              method: :post,
-              class: "btn-secondary cursor-pointer",
-              form: { data: { turbo_submits_with: "Reconciling…" } } %>
-      <% end %>
-      <%= link_to "Import Monthly Statement",
-            new_monthly_credit_card_statement_path(credit_card_account_id: @monthly_credit_card_statement.credit_card_account_id),
-            class: "btn-secondary" %>
-    </div>
+    <%= render "monthly_credit_card_statements/unreconciled_transactions/actions",
+          dom_id: "unreconciled_actions_top",
+          show_import: true %>
   </div>
+
+  <% if @categories.empty? %>
+    <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+      No categories are available yet. Import a year-end statement first so category and subcategory dropdowns can be populated.
+    </div>
+  <% end %>
 
   <% if @unreconciled_transactions.any? %>
     <div class="data-table-wrap">
@@ -50,38 +30,21 @@
             <th>Date</th>
             <th>Description</th>
             <th class="text-right">Amount</th>
-            <th>Category</th>
-            <th>Subcategory</th>
+            <th>Category / Subcategory</th>
           </tr>
         </thead>
         <tbody>
           <% @unreconciled_transactions.each do |txn| %>
-            <tr>
-              <td class="whitespace-nowrap"><%= display_date(txn.date) %></td>
-              <td class="font-medium text-ink"><%= txn.description %></td>
-              <td class="text-right font-medium text-ink"><%= cents_to_currency(txn.amount_cents) %></td>
-              <td><%= display_text(txn.category) %></td>
-              <td><%= display_text(txn.subcategory) %></td>
-            </tr>
+            <%= render "monthly_credit_card_statements/unreconciled_transactions/row", txn: txn %>
           <% end %>
         </tbody>
       </table>
     </div>
 
-    <div class="flex flex-wrap justify-end gap-2">
-      <% if @ready_to_save_count.positive? %>
-        <%= button_to "Save Reconciled",
-              monthly_credit_card_statement_save_reconciled_path(@monthly_credit_card_statement),
-              method: :post,
-              class: "btn-primary cursor-pointer",
-              form: { data: { turbo_submits_with: "Saving…" } } %>
-      <% end %>
-      <%= button_to "Auto Reconcile",
-            monthly_credit_card_statement_auto_reconcile_path(@monthly_credit_card_statement),
-            method: :post,
-            class: "btn-secondary cursor-pointer",
-            form: { data: { turbo_submits_with: "Reconciling…" } } %>
-    </div>
+    <%= render "monthly_credit_card_statements/unreconciled_transactions/actions",
+          dom_id: "unreconciled_actions_bottom",
+          class: nil,
+          justify: "justify-end gap-2" %>
   <% else %>
     <div class="empty-state py-8">No unreconciled transactions on this statement.</div>
   <% end %>

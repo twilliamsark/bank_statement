@@ -1,0 +1,23 @@
+<div id="<%= local_assigns.fetch(:dom_id) %>" class="<%= local_assigns[:class] %>">
+  <div class="flex flex-wrap <%= local_assigns[:justify] || "gap-2" %>">
+    <% if @ready_to_save_count.positive? %>
+      <%= button_to "Save Reconciled",
+            monthly_credit_card_statement_save_reconciled_path(@monthly_credit_card_statement),
+            method: :post,
+            class: "btn-primary cursor-pointer",
+            form: { data: { turbo_submits_with: "Saving…" } } %>
+    <% end %>
+    <% if @unreconciled_transactions.any? %>
+      <%= button_to "Auto Reconcile",
+            monthly_credit_card_statement_auto_reconcile_path(@monthly_credit_card_statement),
+            method: :post,
+            class: "btn-secondary cursor-pointer",
+            form: { data: { turbo_submits_with: "Reconciling…" } } %>
+    <% end %>
+    <% if local_assigns[:show_import] %>
+      <%= link_to "Import Monthly Statement",
+            new_monthly_credit_card_statement_path(credit_card_account_id: @monthly_credit_card_statement.credit_card_account_id),
+            class: "btn-secondary" %>
+    <% end %>
+  </div>
+</div>
