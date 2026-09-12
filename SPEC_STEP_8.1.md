@@ -1,9 +1,10 @@
 # SPEC — Step 8.1: UnreconciledTransaction + Monthly Import UI
 
 Parent: [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (overall Step 8 design)  
-Next: [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md) (Auto Reconcile)
+Next: [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md) (Auto Reconcile)  
+Related: [`SPEC_STEP_8.5.md`](./SPEC_STEP_8.5.md) (monthly statement list + summary page)
 
-Status: **Not started**
+Status: **Complete**
 
 ---
 
@@ -11,8 +12,8 @@ Status: **Not started**
 
 Introduce staging for monthly credit-card statement rows:
 
-1. Create the **`UnreconciledTransaction`** model (and the **`MonthlyCreditCardStatement`** parent it belongs to).
-2. Add an **Import Monthly Statement** flow that extracts PDF/CSV via `CCAccountStatement` and creates `UnreconciledTransaction` rows **with blank `category` / `subcategory`**.
+1. Create the **`UnreconciledTransaction`** model (and the **`MonthlyCreditCardStatement`** parent it belongs to), including an **`import_fingerprint`** column on each staging row.
+2. Add an **Import Monthly Statement** flow that extracts PDF/CSV via `CCAccountStatement` and creates `UnreconciledTransaction` rows **with blank `category` / `subcategory`** and a computed fingerprint.
 3. Show an **Unreconciled Transactions** UI that lists those rows and includes an import statement button.
 
 **Out of this chunk:** Auto-fill of category/subcategory (Step 8.2), commit into `CreditCardTransaction`, dependent dropdowns for manual reconcile, XOR parent FK changes on `CreditCardTransaction`.
@@ -26,6 +27,8 @@ Introduce staging for monthly credit-card statement rows:
 | Staging model name | `UnreconciledTransaction` / `unreconciled_transactions` |
 | Monthly parent | `MonthlyCreditCardStatement` / `monthly_credit_card_statements` |
 | Categories on import | Always **null** — do not auto-match in 8.1 |
+| `import_fingerprint` on staging | **Yes** — store at import; do **not** dedupe yet |
+| Fingerprint prefix length | `description[0, 21]` (align app helper + backfill year-end rows if changed) |
 | Gem extractors | `.pdf` → `CCAccountStatement::Extractor`; `.csv` → `CCAccountStatement::CSVExtractor` |
 | Date field | `date` ← gem `transaction_date` |
 | Amount | Persist as signed integer cents via existing `Money` helper |
@@ -56,7 +59,7 @@ Minimal parent so staging rows have a home and the import has somewhere to attac
 
 `CreditCardAccount` gains `has_many :monthly_credit_card_statements`.
 
-Core summary cents columns from the gem are **optional** in 8.1; add later if a statement `#show` needs them.
+Core summary cents columns from the gem are **deferred to Step 8.5** (summary `#show`). 8.1 only needs enough parent columns for import + staging.
 
 ### 2. `unreconciled_transactions` (new)
 
@@ -68,17 +71,31 @@ Core summary cents columns from the gem are **optional** in 8.1; add later if a 
 | `amount_cents` | integer | required; signed cents |
 | `category` | string | **nullable** (blank after import in 8.1) |
 | `subcategory` | string | **nullable** (blank after import in 8.1) |
+| `import_fingerprint` | string | required on create; see below |
 | timestamps | | |
 
-Indexes: `monthly_credit_card_statement_id`; optional `[amount_cents]` for later match lookups in 8.2.
+Indexes: `monthly_credit_card_statement_id`; optional `[amount_cents]` for later match lookups in 8.2; optional non-unique index on `import_fingerprint`.
+
+**`import_fingerprint` (required in 8.1):**
+
+- Persist on every staging row at import time.
+- Algorithm matches the app helper (align to **21-char** prefix while doing this):
+
+```ruby
+MD5("#{date}|#{description.to_s[0, 21]}|#{amount_cents}")
+```
+
+- Prefer a shared helper (e.g. `CreditCardTransaction.import_fingerprint_for` fixed to `[0, 21]`, or a concern used by both models).
+- **Do not** use it to skip duplicate staging rows or commits in 8.1 — storage only; dedupe is a later step.
+- If fixing `CreditCardTransaction.import_fingerprint_for` from `[..21]` → `[0, 21]`, **backfill** existing year-end `credit_card_transactions.import_fingerprint` values in the same migration/data fix.
 
 **Not in 8.1 schema (defer):** `posting_date`, `reference_number`, `section`, `reconciled`, `match_source`. Keep the staging table to the columns listed above unless a later chunk needs extras.
 
 Validations:
 
-- Presence: `date`, `description`, `amount_cents`, `monthly_credit_card_statement`
+- Presence: `date`, `description`, `amount_cents`, `monthly_credit_card_statement`, `import_fingerprint`
 - `category` / `subcategory` may be blank
-
+- Assign `import_fingerprint` in a `before_validation` (when blank) from date/description/amount_cents
 ---
 
 ## Import service
@@ -95,10 +112,12 @@ Mirror the shape of `CreditCardStatements::Importer`:
      - `date` = `transaction_date`
      - `description`
      - `amount_cents` (via `Money.cents`)
+     - `import_fingerprint` assigned (model callback or explicit helper call)
      - `category` / `subcategory` left **nil**
 4. Return result: `statement`, `staged_count` (no `CreditCardTransaction` creation).
 
-**Do not** run category matching in this importer (that is Step 8.2).
+**Do not** run category matching in this importer (that is Step 8.2).  
+**Do not** skip staging creates when an `import_fingerprint` already exists (dedupe later).
 
 ---
 
@@ -140,15 +159,17 @@ Nav: extend `nav_section_active?` so monthly routes keep “Credit cards” high
 | Manual category/subcategory dropdowns + PATCH | Later chunk |
 | Commit reconciled rows → `CreditCardTransaction` | Later chunk |
 | Making `credit_card_statement_id` nullable / monthly FK on final txns | Later chunk |
-| `import_fingerprint` dedupe of re-imports | Later / out of Step 8 |
+| Monthly statement index/summary `#show` polish | Step 8.5 |
+| `import_fingerprint` **potential-duplicate** flagging | Step 8.6 (column itself **is** in 8.1; 8.1 stores only) |
 | Free-text categories | Out of Step 8 |
 
 ---
 
 ## Tests (minimum)
 
-- Migration / model: `UnreconciledTransaction` belongs to monthly statement; category/subcategory optional
-- Importer: PDF or CSV (fixture or gem-shaped stub) creates `MonthlyCreditCardStatement` + N `UnreconciledTransaction` rows with nil category/subcategory
+- Migration / model: `UnreconciledTransaction` belongs to monthly statement; category/subcategory optional; `import_fingerprint` present
+- Fingerprint helper uses `description[0, 21]` (not `[..21]`); staging row fingerprint matches that helper
+- Importer: PDF or CSV (fixture or gem-shaped stub) creates `MonthlyCreditCardStatement` + N `UnreconciledTransaction` rows with nil category/subcategory and non-blank `import_fingerprint`
 - Integration: accounts index shows **Import Year End Statement** and **Import Monthly Statement**
 - Integration: successful monthly create redirects to unreconciled list; blank category/subcategory columns rendered
 
@@ -156,7 +177,7 @@ Nav: extend `nav_section_active?` so monthly routes keep “Credit cards” high
 
 ## Suggested implementation order
 
-1. Migrations: `monthly_credit_card_statements`, `unreconciled_transactions`
+1. Migrations: `monthly_credit_card_statements`, `unreconciled_transactions` (incl. `import_fingerprint`); fingerprint helper fix + year-end backfill if needed
 2. Models + associations on `CreditCardAccount`
 3. `MonthlyCreditCardStatements::Importer`
 4. Controllers/routes/views: rename year-end CTA, monthly new/create, unreconciled index
@@ -167,6 +188,7 @@ Nav: extend `nav_section_active?` so monthly routes keep “Credit cards” high
 ## Done when
 
 - User can import a monthly PDF/CSV for a credit card account
-- Staging rows exist as `UnreconciledTransaction` with date / description / amount and empty category + subcategory
+- Staging rows exist as `UnreconciledTransaction` with date / description / amount / `import_fingerprint` and empty category + subcategory
 - UI lists those rows and exposes an import statement entry point
 - No auto-categorization has run yet
+- Fingerprints are stored but **not** used for dedupe yet

@@ -35,7 +35,7 @@
         <nav class="app-nav" aria-label="Primary">
           <%= nav_link "Accounts", accounts_path, active: nav_section_active?("/accounts") %>
           <%= nav_link "Statements", account_statements_path, active: nav_section_active?("/account_statements") %>
-          <%= nav_link "Credit cards", credit_card_accounts_path, active: nav_section_active?("/credit_card_accounts", "/credit_card_statements") %>
+          <%= nav_link "Credit cards", credit_card_accounts_path, active: nav_section_active?("/credit_card_accounts", "/credit_card_statements", "/monthly_credit_card_statements") %>
         </nav>
       </div>
     </header>

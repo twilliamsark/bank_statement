@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_212606) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_193922) do
   create_table "account_statements", force: :cascade do |t|
     t.integer "account_id"
     t.string "account_name"
@@ -130,10 +130,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_212606) do
     t.index ["subcategory"], name: "index_credit_card_transactions_on_subcategory"
   end
 
+  create_table "monthly_credit_card_statements", force: :cascade do |t|
+    t.string "account_name"
+    t.string "account_number"
+    t.datetime "created_at", null: false
+    t.integer "credit_card_account_id", null: false
+    t.string "import_format"
+    t.integer "page_count"
+    t.date "period_end"
+    t.date "period_start"
+    t.string "source_filename"
+    t.datetime "updated_at", null: false
+    t.index ["credit_card_account_id"], name: "index_monthly_credit_card_statements_on_credit_card_account_id"
+  end
+
+  create_table "unreconciled_transactions", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.text "description", null: false
+    t.string "import_fingerprint", null: false
+    t.integer "monthly_credit_card_statement_id", null: false
+    t.string "subcategory"
+    t.datetime "updated_at", null: false
+    t.index ["amount_cents"], name: "index_unreconciled_transactions_on_amount_cents"
+    t.index ["import_fingerprint"], name: "index_unreconciled_transactions_on_import_fingerprint"
+    t.index ["monthly_credit_card_statement_id"], name: "idx_on_monthly_credit_card_statement_id_eed6fc13f7"
+  end
+
   add_foreign_key "account_statements", "accounts"
   add_foreign_key "account_transactions", "account_statements"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "credit_card_statements", "credit_card_accounts"
   add_foreign_key "credit_card_transactions", "credit_card_statements"
+  add_foreign_key "monthly_credit_card_statements", "credit_card_accounts"
+  add_foreign_key "unreconciled_transactions", "monthly_credit_card_statements"
 end

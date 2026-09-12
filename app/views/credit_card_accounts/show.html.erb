@@ -1,6 +1,18 @@
 <% content_for :title, @credit_card_account.name %>
 
 <div class="space-y-8">
+  <% if @unreconciled_monthly_statement %>
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3">
+      <p class="text-sm font-medium text-brand-900">
+        <%= pluralize(@unreconciled_monthly_statement.unreconciled_transactions.size, "unreconciled transaction") %>
+        waiting on a monthly statement.
+      </p>
+      <%= link_to "View Unreconciled Transactions",
+            monthly_credit_card_statement_unreconciled_transactions_path(@unreconciled_monthly_statement),
+            class: "btn-primary" %>
+    </div>
+  <% end %>
+
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
       <p class="text-sm text-muted">
@@ -8,7 +20,8 @@
       </p>
       <h1 class="page-title mt-2"><%= @credit_card_account.name %></h1>
       <p class="page-subtitle">
-        <%= pluralize(@statements.size, "statement") %>
+        <%= pluralize(@year_end_statements.size, "year-end statement") %>
+        · <%= pluralize(@monthly_statements.size, "monthly statement") %>
         <% if @years_covered %>
           · <%= @years_covered.first == @years_covered.last ? @years_covered.first : "#{@years_covered.first}–#{@years_covered.last}" %>
         <% end %>
@@ -19,8 +32,11 @@
       <%= link_to "View transactions",
             credit_card_account_transactions_path(@credit_card_account),
             class: "btn-primary" %>
-      <%= link_to "Import statement",
+      <%= link_to "Import Year End Statement",
             new_credit_card_statement_path(credit_card_account_id: @credit_card_account.id),
+            class: "btn-secondary" %>
+      <%= link_to "Import Monthly Statement",
+            new_monthly_credit_card_statement_path(credit_card_account_id: @credit_card_account.id),
             class: "btn-secondary" %>
     </div>
   </div>
@@ -35,8 +51,8 @@
 
   <section class="grid gap-4 sm:grid-cols-3">
     <div class="card-pad">
-      <p class="stat-label">Statements</p>
-      <p class="stat-value text-base"><%= @statements.size %></p>
+      <p class="stat-label">Year-end statements</p>
+      <p class="stat-value text-base"><%= @year_end_statements.size %></p>
     </div>
     <div class="card-pad">
       <p class="stat-label">Years covered</p>
@@ -83,8 +99,54 @@
   </section>
 
   <section>
-    <h2 class="mb-3 text-lg font-semibold text-ink">Statements</h2>
-    <% if @statements.any? %>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Monthly statements</h2>
+    <% if @monthly_statements.any? %>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>File</th>
+              <th>Format</th>
+              <th>Unreconciled</th>
+              <th class="text-right"> </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @monthly_statements.each do |statement| %>
+              <tr>
+                <td class="font-medium text-ink">
+                  <% if statement.period_start.present? || statement.period_end.present? %>
+                    <%= display_date(statement.period_start) %> – <%= display_date(statement.period_end) %>
+                  <% else %>
+                    —
+                  <% end %>
+                </td>
+                <td><%= display_text(statement.source_filename) %></td>
+                <td>
+                  <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <%= display_text(statement.import_format) %>
+                  </span>
+                </td>
+                <td><%= statement.unreconciled_transactions.size %></td>
+                <td class="text-right">
+                  <%= link_to "View Unreconciled",
+                        monthly_credit_card_statement_unreconciled_transactions_path(statement),
+                        class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-8">No monthly statements for this card yet.</div>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Year-end statements</h2>
+    <% if @year_end_statements.any? %>
       <div class="data-table-wrap">
         <table class="data-table">
           <thead>
@@ -98,7 +160,7 @@
             </tr>
           </thead>
           <tbody>
-            <% @statements.each do |statement| %>
+            <% @year_end_statements.each do |statement| %>
               <tr>
                 <td class="font-medium text-ink"><%= display_text(statement.statement_year) %></td>
                 <td><%= display_text(statement.source_filename) %></td>
@@ -118,7 +180,7 @@
         </table>
       </div>
     <% else %>
-      <div class="empty-state py-8">No statements for this card yet.</div>
+      <div class="empty-state py-8">No year-end statements for this card yet.</div>
     <% end %>
   </section>
 </div>

@@ -6,9 +6,14 @@ Parent: Steps 1–7 complete (`SPEC.md` marked Complete). Step 8 is a **new scop
 
 | Chunk | Spec | Scope |
 | ----- | ---- | ----- |
-| 8.1 | [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md) | `UnreconciledTransaction` + `MonthlyCreditCardStatement` + monthly import UI (blank categories) |
+| 8.1 | [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md) | `UnreconciledTransaction` (+ `import_fingerprint`) + `MonthlyCreditCardStatement` + monthly import UI (blank categories) |
 | 8.2 | [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md) | **Auto Reconcile** button (amount + 21-char description match) |
-| Later | TBD | Manual dropdowns, commit to `CreditCardTransaction`, XOR parent FKs, etc. |
+| 8.2.1 | [`SPEC_STEP_8.2.1.md`](./SPEC_STEP_8.2.1.md) | Card summary: monthly statements above year-end + View Unreconciled entry points |
+| 8.3 | [`SPEC_STEP_8.3.md`](./SPEC_STEP_8.3.md) | Monthly FK on `CreditCardTransaction` + **Save Reconciled** (copy + delete staging) |
+| 8.4 | [`SPEC_STEP_8.4.md`](./SPEC_STEP_8.4.md) | Per-row category/subcategory dropdowns so remaining rows can be saved |
+| 8.5 | [`SPEC_STEP_8.5.md`](./SPEC_STEP_8.5.md) | Monthly statements index + summary `#show` + browse/Import entry points |
+| 8.6 | [`SPEC_STEP_8.6.md`](./SPEC_STEP_8.6.md) | Fingerprint **potential duplicate** flag on import; must clear before reconcile/save |
+| Later | TBD | Items still in parent Step 8 but not covered by 8.1–8.6 |
 
 This document remains the locked overall design. Chunk specs may simplify naming/sequencing (e.g. staging model `UnreconciledTransaction`, Auto Reconcile as an explicit button instead of import-time auto-fill).
 
@@ -22,7 +27,7 @@ This document remains the locked overall design. Chunk specs may simplify naming
 | Monthly parent       | New `MonthlyCreditCardStatement` + FK on `CreditCardTransaction`           |
 | Uncategorized home   | **Staging table** until Import commits reconciled rows                     |
 | Category auto-fill   | Match year-end txns by **amount + first 21 description chars** (no date)   |
-| `import_fingerprint` | **Duplicate detection later** — not used for category matching in Step 8   |
+| `import_fingerprint` | Category matching does **not** use it; **potential-duplicate** flagging is Step 8.6 |
 | Date field           | Use gem `transaction_date` as `date`                                       |
 | Match scope          | Same `CreditCardAccount` only                                              |
 | UI rename            | `/credit_card_accounts` “Import statement” → **Import Year End Statement** |
@@ -296,7 +301,7 @@ end
 
 | Out                                                          | Notes                                         |
 | ------------------------------------------------------------ | --------------------------------------------- |
-| Using `import_fingerprint` to skip duplicate monthly imports | Later step                                    |
+| Auto-skipping/deleting duplicate monthly imports             | 8.6 **flags** potential duplicates instead; no auto-skip/delete |
 | Free-text category entry                                     | Selects from existing txn values only         |
 | Renaming `CreditCardStatement` → YearEnd…                    | Keep existing name; UI copy clarifies         |
 | Editing categories on already-committed monthly txns         | Not required                                  |

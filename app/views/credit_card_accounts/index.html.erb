@@ -3,11 +3,14 @@
 <div class="space-y-6">
   <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
-      <p class="eyebrow">Year-end summaries</p>
+      <p class="eyebrow">Credit cards</p>
       <h1 class="page-title">Credit cards</h1>
-      <p class="page-subtitle">Named cards you assign when importing year-end statements.</p>
+      <p class="page-subtitle">Named cards for year-end and monthly statement imports.</p>
     </div>
-    <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to "Import Year End Statement", new_credit_card_statement_path, class: "btn-primary" %>
+      <%= link_to "Import Monthly Statement", new_monthly_credit_card_statement_path, class: "btn-secondary" %>
+    </div>
   </div>
 
   <% if @credit_card_accounts.any? %>
@@ -30,7 +33,8 @@
               <td class="space-x-3 text-right">
                 <%= link_to "View", credit_card_account_path(account), class: "font-semibold text-brand-700 hover:text-brand-800" %>
                 <%= link_to "Transactions", credit_card_account_transactions_path(account), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
-                <%= link_to "Import", new_credit_card_statement_path(credit_card_account_id: account.id), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
+                <%= link_to "Import year-end", new_credit_card_statement_path(credit_card_account_id: account.id), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
+                <%= link_to "Import monthly", new_monthly_credit_card_statement_path(credit_card_account_id: account.id), class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
               </td>
             </tr>
           <% end %>
@@ -40,15 +44,18 @@
   <% else %>
     <div class="empty-state">
       <p class="text-base font-medium text-ink">No credit cards yet</p>
-      <p class="mt-1 text-sm">Import a year-end statement and give the card a name to get started.</p>
-      <div class="mt-5">
-        <%= link_to "Import statement", new_credit_card_statement_path, class: "btn-primary" %>
+      <p class="mt-1 text-sm">Import a year-end or monthly statement and give the card a name to get started.</p>
+      <div class="mt-5 flex flex-wrap justify-center gap-2">
+        <%= link_to "Import Year End Statement", new_credit_card_statement_path, class: "btn-primary" %>
+        <%= link_to "Import Monthly Statement", new_monthly_credit_card_statement_path, class: "btn-secondary" %>
       </div>
     </div>
   <% end %>
 
   <p class="text-sm text-muted">
-    Looking for the flat statement list?
-    <%= link_to "All CC statements", credit_card_statements_path, class: "font-medium text-brand-700 hover:text-brand-800" %>
+    Looking for statement lists?
+    <%= link_to "Year-end statements", credit_card_statements_path, class: "font-medium text-brand-700 hover:text-brand-800" %>
+    ·
+    <%= link_to "Monthly statements", monthly_credit_card_statements_path, class: "font-medium text-brand-700 hover:text-brand-800" %>
   </p>
 </div>

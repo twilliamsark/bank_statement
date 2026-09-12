@@ -4,7 +4,7 @@ Parent: [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (overall Step 8 design)
 Prior chunk: [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md)  
 Depends on: `UnreconciledTransaction` + monthly import UI from 8.1
 
-Status: **Not started**
+Status: **Complete**
 
 ---
 
@@ -21,7 +21,7 @@ Add an **Auto Reconcile** button on the Unreconciled Transactions UI that walks 
 | Topic | Decision |
 | ----- | -------- |
 | Trigger | Explicit **Auto Reconcile** button (not during monthly import) |
-| Which rows | Only `UnreconciledTransaction`s that do **not** already have both `category` and `subcategory` set |
+| Which rows | Only `UnreconciledTransaction`s that do **not** already have both `category` and `subcategory` set (and are not potential duplicates — see 8.6) |
 | Match key | Same account + `amount_cents` + first **21** description characters (`description[0, 21]`) — **no date** |
 | Match source | Year-end-backed `CreditCardTransaction`s on the same `CreditCardAccount` only |
 | Ambiguous matches | If matching year-end rows disagree on `(category, subcategory)`, leave the staging row unchanged |
@@ -111,7 +111,7 @@ Exact controller name is flexible; button must POST and return to the list.
 | `reconciled` boolean / `match_source` columns | Optional later; 8.2 can treat “both fields present” as reconciled |
 | Import / commit into `CreditCardTransaction` | Later chunk |
 | Matching across different cards | Same account only |
-| Using `import_fingerprint` for dedupe | Out of Step 8 |
+| `import_fingerprint` potential-duplicate flagging | Step 8.6 |
 
 ---
 

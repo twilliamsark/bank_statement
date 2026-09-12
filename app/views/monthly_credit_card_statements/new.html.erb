@@ -1,0 +1,53 @@
+<% content_for :title, "Import monthly credit card statement" %>
+
+<div class="mx-auto max-w-xl space-y-6">
+  <div>
+    <p class="text-sm text-muted">
+      <%= link_to "← Credit cards", credit_card_accounts_path, class: "hover:text-brand-700" %>
+    </p>
+    <h1 class="page-title mt-2">Import monthly credit card statement</h1>
+    <p class="page-subtitle leading-relaxed">
+      Choose or name the card, then upload a Bank of America monthly PDF or CSV.
+    </p>
+  </div>
+
+  <%= form_with url: monthly_credit_card_statements_path, method: :post, multipart: true, class: "card-pad space-y-5" do %>
+    <fieldset class="space-y-3">
+      <legend class="text-sm font-semibold text-ink">Credit card account</legend>
+
+      <% if @credit_card_accounts.any? %>
+        <label class="flex items-start gap-3 rounded-xl border border-line p-3">
+          <%= radio_button_tag :account_mode, "existing", @account_mode == "existing", class: "mt-1" %>
+          <span class="flex-1">
+            <span class="block text-sm font-medium text-ink">Existing card</span>
+            <%= select_tag :credit_card_account_id,
+                  options_from_collection_for_select(@credit_card_accounts, :id, :name, @selected_account_id),
+                  include_blank: "Select a card…",
+                  class: "mt-2 w-full rounded-lg border border-line px-3 py-2 text-sm" %>
+          </span>
+        </label>
+      <% end %>
+
+      <label class="flex items-start gap-3 rounded-xl border border-line p-3">
+        <%= radio_button_tag :account_mode, "new", @account_mode == "new", class: "mt-1" %>
+        <span class="flex-1">
+          <span class="block text-sm font-medium text-ink">New card</span>
+          <%= text_field_tag :new_account_name, params[:new_account_name],
+                placeholder: "e.g. Travel card",
+                class: "mt-2 w-full rounded-lg border border-line px-3 py-2 text-sm" %>
+        </span>
+      </label>
+    </fieldset>
+
+    <div>
+      <label for="file" class="block text-sm font-semibold text-ink">Statement file</label>
+      <p class="mt-1 text-xs text-muted">Accepted formats: PDF, CSV</p>
+      <%= file_field_tag :file, accept: ".pdf,.csv,application/pdf,text/csv", required: true, class: "file-input" %>
+    </div>
+
+    <div class="flex flex-wrap gap-3 pt-1">
+      <%= submit_tag "Import", class: "btn-primary cursor-pointer", data: { turbo_submits_with: "Importing…" } %>
+      <%= link_to "Cancel", credit_card_accounts_path, class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>

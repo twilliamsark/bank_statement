@@ -1,0 +1,67 @@
+<% content_for :title, "Monthly credit card statements" %>
+
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Monthly statements</p>
+      <h1 class="page-title">
+        <%= @credit_card_account ? "#{@credit_card_account.name} monthly statements" : "Monthly credit card statements" %>
+      </h1>
+      <p class="page-subtitle">Imported monthly files<%= @credit_card_account ? " for this card" : "" %>.</p>
+    </div>
+    <%= link_to "Import Monthly Statement",
+          new_monthly_credit_card_statement_path(credit_card_account_id: @credit_card_account&.id),
+          class: "btn-primary" %>
+  </div>
+
+  <% if @monthly_credit_card_statements.any? %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Card</th>
+            <th>Period</th>
+            <th>File</th>
+            <th>Format</th>
+            <th>Unreconciled</th>
+            <th class="text-right"> </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @monthly_credit_card_statements.each do |statement| %>
+            <tr>
+              <td class="font-semibold text-ink"><%= statement.credit_card_account.name %></td>
+              <td>
+                <% if statement.period_start.present? || statement.period_end.present? %>
+                  <%= display_date(statement.period_start) %> – <%= display_date(statement.period_end) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><%= display_text(statement.source_filename) %></td>
+              <td>
+                <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  <%= display_text(statement.import_format) %>
+                </span>
+              </td>
+              <td><%= statement.unreconciled_transactions.size %></td>
+              <td class="text-right">
+                <%= link_to "Unreconciled",
+                      monthly_credit_card_statement_unreconciled_transactions_path(statement),
+                      class: "font-semibold text-brand-700 hover:text-brand-800" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <p class="text-base font-medium text-ink">No monthly statements yet</p>
+      <p class="mt-1 text-sm">Import a monthly PDF or CSV to stage transactions for reconciliation.</p>
+      <div class="mt-5">
+        <%= link_to "Import Monthly Statement", new_monthly_credit_card_statement_path, class: "btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>

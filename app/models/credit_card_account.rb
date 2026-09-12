@@ -3,6 +3,7 @@
 class CreditCardAccount < ApplicationRecord
   has_many :credit_card_statements, dependent: :restrict_with_exception
   has_many :credit_card_transactions, through: :credit_card_statements
+  has_many :monthly_credit_card_statements, dependent: :restrict_with_exception
 
   validates :name, :name_key, presence: true
   validates :name_key, uniqueness: true

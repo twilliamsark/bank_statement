@@ -61,4 +61,63 @@ class CreditCardAccountSummaryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href=?]", credit_card_account_path(@account), text: "View"
   end
+
+  test "show lists monthly statements above year-end and links to unreconciled" do
+    older = MonthlyCreditCardStatement.create!(
+      credit_card_account: @account,
+      source_filename: "older-monthly.csv",
+      import_format: "csv",
+      period_end: Date.new(2025, 6, 30),
+      created_at: 2.days.ago
+    )
+    older.unreconciled_transactions.create!(
+      date: Date.new(2025, 6, 1),
+      description: "OLD STAGING",
+      amount_cents: 100
+    )
+
+    newer = MonthlyCreditCardStatement.create!(
+      credit_card_account: @account,
+      source_filename: "newer-monthly.csv",
+      import_format: "csv",
+      period_end: Date.new(2025, 8, 31),
+      created_at: 1.day.ago
+    )
+    newer.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 1),
+      description: "NEW STAGING",
+      amount_cents: 200
+    )
+
+    get credit_card_account_path(@account)
+    assert_response :success
+
+    headings = response.body.scan(%r{<h2[^>]*>(.*?)</h2>}m).flatten.map { |html| html.gsub(/<[^>]+>/, "").strip }
+    monthly_idx = headings.index("Monthly statements")
+    year_end_idx = headings.index("Year-end statements")
+    assert monthly_idx, "expected Monthly statements heading"
+    assert year_end_idx, "expected Year-end statements heading"
+    assert_operator monthly_idx, :<, year_end_idx
+
+    assert_select "a[href=?]", monthly_credit_card_statement_unreconciled_transactions_path(newer),
+                  text: "View Unreconciled Transactions"
+    assert_select "a[href=?]", monthly_credit_card_statement_unreconciled_transactions_path(newer),
+                  text: "View Unreconciled"
+    assert_select "a[href=?]", monthly_credit_card_statement_unreconciled_transactions_path(older),
+                  text: "View Unreconciled"
+    assert_match "newer-monthly.csv", response.body
+    assert_match "older-monthly.csv", response.body
+  end
+
+  test "show hides top unreconciled button when no staging rows remain" do
+    MonthlyCreditCardStatement.create!(
+      credit_card_account: @account,
+      source_filename: "empty-monthly.csv",
+      import_format: "csv"
+    )
+
+    get credit_card_account_path(@account)
+    assert_response :success
+    assert_select "a", text: "View Unreconciled Transactions", count: 0
+  end
 end
