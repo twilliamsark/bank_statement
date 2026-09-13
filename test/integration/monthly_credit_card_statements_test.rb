@@ -37,10 +37,10 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_match(/Staged 2 transactions/, flash[:notice])
     assert_match "STORE A", response.body
     assert_match "HOTEL", response.body
-    assert_select "select[name=?]", "unreconciled_transaction[category]"
-    assert_select "select[name=?] option[value='']", "unreconciled_transaction[category]"
-    assert_select "select[name=?] option[value='']", "unreconciled_transaction[subcategory]"
+    assert_select "input[name=?]", "unreconciled_transaction[category]"
+    assert_select "input[name=?]", "unreconciled_transaction[subcategory]"
   end
+
 
   test "import with existing account reuses it" do
     account = create_credit_card_account!(name: "Sapphire")
@@ -98,8 +98,9 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
 
     get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
     assert_response :success
-    assert_select "select[name=?]", "unreconciled_transaction[category]"
-    assert_select "select[name=?]", "unreconciled_transaction[subcategory]"
+    assert_select "input[name=?]", "unreconciled_transaction[category]"
+    assert_select "input[name=?]", "unreconciled_transaction[subcategory]"
+    assert_select "datalist option[value=?]", "Merchandise"
     assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly), count: 0
 
     patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
@@ -228,6 +229,38 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/Import a year-end statement first/, response.body)
   end
+
+  test "unreconciled accepts free-text category and subcategory then save reconciled" do
+    account = create_credit_card_account!(name: "Travel Card")
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    staging = monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 10),
+      description: "CUSTOM MERCHANT",
+      amount_cents: 2500
+    )
+
+    patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
+      unreconciled_transaction: { category: "  Custom Spend  ", subcategory: "  Widgets  " }
+    }
+    follow_redirect!
+    staging.reload
+    assert_equal "Custom Spend", staging.category
+    assert_equal "Widgets", staging.subcategory
+    assert_select "datalist option[value=?]", "Custom Spend"
+    assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly)
+
+    assert_difference -> { CreditCardTransaction.where(monthly_credit_card_statement_id: monthly.id).count }, 1 do
+      post monthly_credit_card_statement_save_reconciled_path(monthly)
+    end
+    committed = CreditCardTransaction.find_by!(description: "CUSTOM MERCHANT")
+    assert_equal "Custom Spend", committed.category
+    assert_equal "Widgets", committed.subcategory
+  end
+
 
   test "save reconciled commits categorized staging rows" do
     account = create_credit_card_account!(name: "Travel Card")

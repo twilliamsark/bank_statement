@@ -1,0 +1,54 @@
+<%#
+  locals:
+    form: (required)
+    record: (required)
+    categories: (required) Array of category suggestion strings
+    subcategories: (required) Array of subcategory suggestions for current category
+    subcategories_by_category: (required) Hash for Stimulus
+    require_subcategory: (optional, default false)
+%>
+<% require_subcategory = local_assigns.fetch(:require_subcategory, false) %>
+<% category_present = record.category.present? %>
+<% category_list_id = dom_id(record, :category_list) %>
+<% subcategory_list_id = dom_id(record, :subcategory_list) %>
+
+<div class="w-40 shrink-0">
+  <label class="sr-only" for="<%= dom_id(record, :category) %>">Category</label>
+  <%= form.text_field :category,
+        id: dom_id(record, :category),
+        list: category_list_id,
+        autocomplete: "off",
+        placeholder: "Category",
+        class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm",
+        data: {
+          category_subcategory_target: "category",
+          action: "pointerdown->category-subcategory#categoryPointerDown focus->category-subcategory#categoryFocused blur->category-subcategory#categoryBlurred input->category-subcategory#categoryInput change->category-subcategory#categoryChanged"
+        } %>
+  <datalist id="<%= category_list_id %>">
+    <% categories.each do |name| %>
+      <option value="<%= name %>"></option>
+    <% end %>
+  </datalist>
+</div>
+
+<div class="w-40 shrink-0">
+  <label class="sr-only" for="<%= dom_id(record, :subcategory) %>">Subcategory</label>
+  <%= form.text_field :subcategory,
+        id: dom_id(record, :subcategory),
+        list: subcategory_list_id,
+        autocomplete: "off",
+        placeholder: (category_present ? "Subcategory" : "Enter category first"),
+        disabled: !category_present,
+        class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm #{'opacity-50 cursor-not-allowed' unless category_present}",
+        data: {
+          category_subcategory_target: "subcategory",
+          action: "pointerdown->category-subcategory#subcategoryPointerDown focus->category-subcategory#subcategoryFocused blur->category-subcategory#subcategoryBlurred change->category-subcategory#subcategoryChanged"
+        } %>
+  <datalist id="<%= subcategory_list_id %>" data-category-subcategory-target="subcategoryList">
+    <% if category_present %>
+      <% subcategories.each do |name| %>
+        <option value="<%= name %>"></option>
+      <% end %>
+    <% end %>
+  </datalist>
+</div>

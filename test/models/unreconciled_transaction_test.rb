@@ -52,4 +52,36 @@ class UnreconciledTransactionTest < ActiveSupport::TestCase
     assert_includes txn.errors[:description], "can't be blank"
     assert_includes txn.errors[:amount_cents], "can't be blank"
   end
+
+  test "strips free-text category labels and allows blank" do
+    txn = @statement.unreconciled_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      amount_cents: 1234,
+      category: "  New Cat  ",
+      subcategory: "  New Sub  "
+    )
+    assert_equal "New Cat", txn.category
+    assert_equal "New Sub", txn.subcategory
+
+    txn.update!(category: "   ", subcategory: nil)
+    assert_nil txn.category
+    assert_nil txn.subcategory
+  end
+
+  test "clears subcategory when category is blank" do
+    txn = @statement.unreconciled_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      amount_cents: 1234,
+      category: "Merchandise",
+      subcategory: "Clothing"
+    )
+
+    txn.update!(category: "", subcategory: "Clothing")
+    assert_nil txn.category
+    assert_nil txn.subcategory
+  end
 end
+
+

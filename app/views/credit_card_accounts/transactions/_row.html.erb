@@ -20,13 +20,13 @@
       —
     <% end %>
   </td>
-  <td class="min-w-[22rem]">
-
+  <td class="whitespace-nowrap">
     <%= form_with model: txn,
           url: credit_card_account_transaction_path(@credit_card_account, txn),
           method: :patch,
-          class: "flex flex-wrap items-center gap-2",
+          class: "flex flex-nowrap items-center gap-2",
           data: {
+
             controller: "category-subcategory",
             category_subcategory_options_value: @subcategories_by_category.to_json,
             category_subcategory_require_subcategory_value: true,
@@ -35,33 +35,16 @@
       <% %i[date_from date_to category subcategory description amount page].each do |key| %>
         <%= hidden_field_tag key, params[key] if params[key].present? %>
       <% end %>
-      <div class="min-w-[10rem] flex-1">
-        <label class="sr-only" for="<%= dom_id(txn, :category) %>">Category</label>
-        <%= f.select :category,
-              options_for_select(@edit_categories, txn.category),
-              {},
-              id: dom_id(txn, :category),
-              class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm",
-              data: {
-                category_subcategory_target: "category",
-                action: "change->category-subcategory#categoryChanged"
-              } %>
-      </div>
-      <div class="min-w-[10rem] flex-1">
-        <label class="sr-only" for="<%= dom_id(txn, :subcategory) %>">Subcategory</label>
-        <%= f.select :subcategory,
-              options_for_select(subcategories, txn.subcategory),
-              { include_blank: "—" },
-              id: dom_id(txn, :subcategory),
-              class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm",
-              data: {
-                category_subcategory_target: "subcategory",
-                action: "change->category-subcategory#subcategoryChanged"
-              } %>
-      </div>
+      <%= render "shared/category_subcategory_fields",
+            form: f,
+            record: txn,
+            categories: @edit_categories,
+            subcategories: subcategories,
+            subcategories_by_category: @subcategories_by_category,
+            require_subcategory: true %>
     <% end %>
   </td>
-  <td class="max-w-md"><%= txn.description %></td>
+  <td class="max-w-[calc(20rem-5ch)] break-words whitespace-normal sm:max-w-[calc(24rem-5ch)] lg:max-w-[calc(28rem-5ch)]"><%= txn.description %></td>
   <td><%= txn.location %></td>
   <td class="whitespace-nowrap text-right font-medium text-ink"><%= cents_to_currency(txn.amount_cents) %></td>
 </tr>

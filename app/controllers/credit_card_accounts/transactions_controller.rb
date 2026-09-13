@@ -38,14 +38,13 @@ module CreditCardAccounts
     end
 
     def set_edit_category_options
-      @edit_categories = CreditCardTransaction.distinct.order(:category).pluck(:category)
-      @subcategories_by_category = CreditCardTransaction
-        .distinct
-        .order(:category, :subcategory)
-        .pluck(:category, :subcategory)
+      pairs = CreditCardTransaction.distinct.order(:category, :subcategory).pluck(:category, :subcategory)
+      @edit_categories = pairs.map(&:first).uniq
+      @subcategories_by_category = pairs
         .group_by(&:first)
-        .transform_values { |pairs| pairs.map(&:last) }
+        .transform_values { |rows| rows.map(&:last).uniq }
     end
+
 
     def load_transactions_index
       base = @credit_card_account.all_credit_card_transactions

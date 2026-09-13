@@ -39,14 +39,21 @@ module MonthlyCreditCardStatements
     end
 
     def set_edit_category_options
-      @categories = CreditCardTransaction.distinct.order(:category).pluck(:category)
-      @subcategories_by_category = CreditCardTransaction
+      committed_pairs = CreditCardTransaction.distinct.order(:category, :subcategory).pluck(:category, :subcategory)
+      staging_pairs = UnreconciledTransaction
+        .where.not(category: [ nil, "" ])
+        .where.not(subcategory: [ nil, "" ])
         .distinct
         .order(:category, :subcategory)
         .pluck(:category, :subcategory)
+
+      pairs = (committed_pairs + staging_pairs).uniq
+      @categories = pairs.map(&:first).uniq.sort
+      @subcategories_by_category = pairs
         .group_by(&:first)
-        .transform_values { |pairs| pairs.map(&:last) }
+        .transform_values { |rows| rows.map(&:last).uniq.sort }
     end
+
 
     def load_unreconciled_index
       base = @monthly_credit_card_statement.unreconciled_transactions

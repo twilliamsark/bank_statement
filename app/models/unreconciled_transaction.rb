@@ -3,6 +3,7 @@
 class UnreconciledTransaction < ApplicationRecord
   include ImportFingerprintable
   include FilterableTransactions
+  include CategorizationLabels
 
   belongs_to :monthly_credit_card_statement
 

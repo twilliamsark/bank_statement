@@ -3,7 +3,7 @@
 Parent: [`SPEC_STEP_8.md`](./SPEC_STEP_8.md)  
 Prior: [`SPEC_STEP_8.4.md`](./SPEC_STEP_8.4.md), [`SPEC_STEP_8.5.1.md`](./SPEC_STEP_8.5.1.md)
 
-Status: **Not started**
+Status: **Complete**
 
 ---
 
@@ -117,3 +117,60 @@ When the typed category is not yet in `CreditCardTransaction`, subcategory datal
 - User can invent a new category/subcategory on unreconciled rows and on account transaction rows without pre-seeding year-end data
 - Existing values remain easy to pick
 - New labels flow into later suggestions, filters, and Auto Reconcile like any other stored category pair
+
+---
+
+## Addendum — post-implementation polish (after 8.5.2)
+
+These follow-on fixes were made in response to real usage of the free-text category UI and the account transactions list. They supersede conflicting details above where noted.
+
+### 1. Subcategory locked until category is set
+
+- Subcategory input is **disabled** when category is blank (placeholder: “Enter category first”).
+- Stimulus enables/disables as the user types a category.
+- Server-side (`CategorizationLabels`): blank category always clears subcategory on normalize.
+
+### 2. Category change always blanks subcategory
+
+- Any **real** category change clears subcategory and rebuilds its suggestion list.
+- On account transactions (`requireSubcategory`), save waits until the user picks a subcategory.
+- Supersedes the softer “clear only if invalid for new category” wording in the original UX section.
+
+### 3. Datalist “show all options” focus behavior
+
+Browsers filter `<datalist>` options by the current input value, so a filled field hid sibling suggestions (e.g. Merchandise only showed `Other Stores/Retail`).
+
+- On **user** focus of category or subcategory: temporarily clear the input so the full suggestion list appears.
+- On blur with no new value: restore the previous value.
+- Focus-clear runs only after **pointerdown** (real click), not when Turbo restores focus after a PATCH — that bug showed a blank subcategory until click-off.
+
+### 4. Category / subcategory field layout
+
+- Fields stay **side by side** (`flex-nowrap`); do not wrap subcategory under category when the row gets tall.
+- Fixed width per field (`w-40`), not `flex-1`, so they do not stretch full-row width when description wraps.
+- Shared partial: `shared/_category_subcategory_fields`.
+
+### 5. Account transactions description / amount layout
+
+Unfiltered rows with long descriptions pushed **Amount** off-screen.
+
+- Description cell: word-wrap (`break-words whitespace-normal`) with capped max-width.
+- Max-width tightened by **5ch** vs Tailwind `xs`/`sm`/`md` caps:
+  `max-w-[calc(20rem-5ch)]` / `sm:max-w-[calc(24rem-5ch)]` / `lg:max-w-[calc(28rem-5ch)]`.
+
+### 6. Wider app shell (more viewable area)
+
+Not category-specific, but done in the same polish pass for transaction tables:
+
+- Content max width: `max-w-6xl` → **`max-w-7xl`** (header / main / footer).
+- Outer horizontal padding reduced: `px-4/6/8` → **`px-3/4/5`**; main vertical padding slightly reduced.
+
+### Locked behavior summary (combobox)
+
+| Action | Result |
+| ------ | ------ |
+| No category | Subcategory disabled / cleared |
+| Change category | Subcategory cleared; suggestions rebuild for new category |
+| Focus category/subcategory (click) | Input clears so full datalist shows; blur restores if unchanged |
+| Turbo re-focus after save | Does **not** clear the field |
+| Pick subcategory | Value saves and stays visible immediately |

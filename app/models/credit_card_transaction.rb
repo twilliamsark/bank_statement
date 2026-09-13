@@ -3,6 +3,7 @@
 class CreditCardTransaction < ApplicationRecord
   include FilterableTransactions
   include ImportFingerprintable
+  include CategorizationLabels
 
   belongs_to :credit_card_statement, optional: true
   belongs_to :monthly_credit_card_statement, optional: true
@@ -10,6 +11,7 @@ class CreditCardTransaction < ApplicationRecord
   validates :date, :description, :category, :subcategory, :checksum, presence: true
   validates :amount_cents, presence: true, numericality: { only_integer: true }
   validate :exactly_one_parent_statement
+
 
   before_validation :assign_checksum, if: -> { checksum.blank? || will_save_change_to_category? || will_save_change_to_subcategory? }
 

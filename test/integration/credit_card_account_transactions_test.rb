@@ -106,12 +106,14 @@ class CreditCardAccountTransactionsTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", credit_card_account_transactions_path(@account)
   end
 
-  test "index renders editable category subcategory selects" do
+  test "index renders editable category subcategory text fields with suggestions" do
     get credit_card_account_transactions_path(@account)
     assert_response :success
-    assert_select "select[name=?]", "credit_card_transaction[category]"
-    assert_select "select[name=?]", "credit_card_transaction[subcategory]"
+    assert_select "input[name=?]", "credit_card_transaction[category]"
+    assert_select "input[name=?]", "credit_card_transaction[subcategory]"
+    assert_select "datalist option[value=?]", "Merchandise"
   end
+
 
   test "patch updates category subcategory and checksum for year-end row" do
     txn = @year_one.credit_card_transactions.find_by!(description: "STORE A")
@@ -179,6 +181,25 @@ class CreditCardAccountTransactionsTest < ActionDispatch::IntegrationTest
     assert_equal "Merchandise", other_txn.category
     assert_equal "Clothing", other_txn.subcategory
   end
+
+  test "patch accepts free-text category and subcategory" do
+    txn = @year_one.credit_card_transactions.find_by!(description: "STORE A")
+    original_checksum = txn.checksum
+
+    patch credit_card_account_transaction_path(@account, txn), params: {
+      credit_card_transaction: { category: "  Brand New Category  ", subcategory: "  Brand New Sub  " }
+    }
+    assert_redirected_to credit_card_account_transactions_path(@account)
+
+    txn.reload
+    assert_equal "Brand New Category", txn.category
+    assert_equal "Brand New Sub", txn.subcategory
+    assert_not_equal original_checksum, txn.checksum
+
+    get credit_card_account_transactions_path(@account)
+    assert_select "datalist option[value=?]", "Brand New Category"
+  end
 end
+
 
 

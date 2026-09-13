@@ -94,5 +94,37 @@ class CreditCardTransactionTest < ActiveSupport::TestCase
       amount_cents: txn.amount_cents
     ), txn.checksum
   end
+
+  test "strips category labels and rejects blank after strip" do
+    txn = @statement.credit_card_transactions.create!(
+      date: Date.new(2025, 6, 1),
+      description: "ONLINE",
+      location: "",
+      amount_cents: 2500,
+      category: "Services",
+      subcategory: "Other Services"
+    )
+
+    txn.update!(category: "  Custom Category  ", subcategory: "  Custom Sub  ")
+    assert_equal "Custom Category", txn.category
+    assert_equal "Custom Sub", txn.subcategory
+
+    assert_not txn.update(category: "   ", subcategory: "Still Here")
+    assert_includes txn.errors[:category], "can't be blank"
+  end
+
+  test "rejects category longer than 100 characters" do
+    txn = @statement.credit_card_transactions.build(
+      date: Date.new(2025, 6, 1),
+      description: "ONLINE",
+      location: "",
+      amount_cents: 2500,
+      category: "A" * 101,
+      subcategory: "Sub"
+    )
+    assert_not txn.valid?
+    assert_includes txn.errors[:category], "is too long (maximum is 100 characters)"
+  end
 end
+
 
