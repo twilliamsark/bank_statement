@@ -23,7 +23,9 @@
             <th>Period</th>
             <th>File</th>
             <th>Format</th>
+            <th class="text-right">New balance</th>
             <th>Unreconciled</th>
+            <th>Committed</th>
             <th class="text-right"> </th>
           </tr>
         </thead>
@@ -31,24 +33,23 @@
           <% @monthly_credit_card_statements.each do |statement| %>
             <tr>
               <td class="font-semibold text-ink"><%= statement.credit_card_account.name %></td>
-              <td>
-                <% if statement.period_start.present? || statement.period_end.present? %>
-                  <%= display_date(statement.period_start) %> – <%= display_date(statement.period_end) %>
-                <% else %>
-                  —
-                <% end %>
-              </td>
+              <td><%= statement.period_label %></td>
               <td><%= display_text(statement.source_filename) %></td>
               <td>
                 <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
                   <%= display_text(statement.import_format) %>
                 </span>
               </td>
+              <td class="text-right font-medium text-ink"><%= cents_to_currency(statement.new_balance_cents) %></td>
               <td><%= statement.unreconciled_transactions.size %></td>
-              <td class="text-right">
+              <td><%= statement.credit_card_transactions.size %></td>
+              <td class="space-x-3 text-right">
+                <%= link_to "View",
+                      monthly_credit_card_statement_path(statement),
+                      class: "font-semibold text-brand-700 hover:text-brand-800" %>
                 <%= link_to "Unreconciled",
                       monthly_credit_card_statement_unreconciled_transactions_path(statement),
-                      class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                      class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
               </td>
             </tr>
           <% end %>

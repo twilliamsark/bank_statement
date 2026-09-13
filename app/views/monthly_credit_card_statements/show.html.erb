@@ -1,0 +1,111 @@
+<% content_for :title, @monthly_credit_card_statement.title_label %>
+
+<div class="space-y-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-sm text-muted">
+        <%= link_to(
+          "← #{@monthly_credit_card_statement.credit_card_account.name}",
+          credit_card_account_path(@monthly_credit_card_statement.credit_card_account),
+          class: "hover:text-brand-700"
+        ) %>
+      </p>
+      <h1 class="page-title mt-2"><%= @monthly_credit_card_statement.title_label %></h1>
+      <p class="page-subtitle">
+        <%= @monthly_credit_card_statement.credit_card_account.name %>
+        · <%= display_text(@monthly_credit_card_statement.source_filename) %>
+        · <span class="uppercase"><%= display_text(@monthly_credit_card_statement.import_format) %></span>
+        <% if @monthly_credit_card_statement.page_count.present? %>
+          · <%= display_text(@monthly_credit_card_statement.page_count) %> pages
+        <% end %>
+      </p>
+      <% unless @monthly_credit_card_statement.summary_available? %>
+        <p
+          class="mt-3 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200"
+        >
+          Summary balances unavailable from CSV — transaction detail is complete after reconcile
+        </p>
+      <% end %>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to(
+        "View transactions",
+        monthly_credit_card_statement_transactions_path(@monthly_credit_card_statement),
+        class: "btn-primary"
+      ) %>
+      <%= link_to(
+        "Unreconciled",
+        monthly_credit_card_statement_unreconciled_transactions_path(@monthly_credit_card_statement),
+        class: "btn-secondary"
+      ) %>
+      <%= button_to(
+        "Delete",
+        monthly_credit_card_statement_path(@monthly_credit_card_statement),
+        method: :delete,
+        form: { data: { turbo_confirm: "Delete this monthly statement, its unreconciled rows, and committed transactions?" } },
+        class: "btn-danger cursor-pointer"
+      ) %>
+    </div>
+  </div>
+
+  <% if @unreconciled_count.positive? %>
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3"
+    >
+      <p class="text-sm font-medium text-brand-900">
+        <%= pluralize(@unreconciled_count, "unreconciled transaction") %> still need category review.
+      </p>
+      <%= link_to(
+        "View Unreconciled Transactions",
+        monthly_credit_card_statement_unreconciled_transactions_path(@monthly_credit_card_statement),
+        class: "btn-primary"
+      ) %>
+    </div>
+  <% end %>
+
+  <section class="grid gap-4 sm:grid-cols-2">
+    <div class="card-pad">
+      <p class="stat-label">Payments &amp; credits</p>
+      <p class="stat-value text-base"><%= cents_to_currency(@monthly_credit_card_statement.payments_and_credits_cents) %></p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">Committed transactions</p>
+      <p class="stat-value text-base"><%= @committed_count %></p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold text-ink">Category / subcategory totals</h2>
+    <% if @category_totals.any? %>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Subcategory</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <%
+              @category_totals.sort_by { |(category, subcategory), _| [category, subcategory] }.each do |(category, subcategory), total_cents|
+            %>
+              <tr>
+                <td class="font-medium text-ink"><%= category %></td>
+                <td><%= subcategory %></td>
+                <td class="text-right font-medium text-ink"><%= cents_to_currency(total_cents) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-8">
+        No committed transactions on this statement yet.
+        <% if @unreconciled_count.positive? %>
+          Reconcile and save staging rows to populate totals.
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

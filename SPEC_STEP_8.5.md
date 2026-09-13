@@ -4,7 +4,7 @@ Parent: [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (overall Step 8 design)
 Prior: [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md)–[`SPEC_STEP_8.4.md`](./SPEC_STEP_8.4.md)  
 Depends on: `MonthlyCreditCardStatement` + import from 8.1; committed monthly `CreditCardTransaction`s from 8.3 for rich totals (show page must still work with only staging / empty committed sets)
 
-Status: **Not started**
+Status: **Complete**
 
 ---
 

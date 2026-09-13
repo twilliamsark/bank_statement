@@ -21,6 +21,9 @@ class MonthlyCreditCardStatements::ImporterTest < ActiveSupport::TestCase
     assert_equal "csv", statement.import_format
     assert_equal 3, statement.unreconciled_transactions.count
     assert statement.source_file.attached?
+    assert_nil statement.new_balance_cents
+    assert_nil statement.previous_balance_cents
+    assert_not statement.summary_available?
 
     hotel = statement.unreconciled_transactions.find_by!(description: "HOTEL STAY DOWNTOWN ABC")
     assert_equal Date.new(2025, 6, 15), hotel.date
@@ -69,6 +72,41 @@ class MonthlyCreditCardStatements::ImporterTest < ActiveSupport::TestCase
     assert statement.source_file.attached?
     assert_equal result.staged_count, statement.unreconciled_transactions.count
     assert statement.unreconciled_transactions.where(category: nil, subcategory: nil).count == result.staged_count
+    assert statement.summary_available?
+    assert statement.new_balance_cents.present?
+  end
+
+  test "summary_attributes_for maps gem summary dollars to cents" do
+    summary = CCAccountStatement::Extractor::Summary.new(
+      previous_balance: BigDecimal("10.00"),
+      payments_and_credits: BigDecimal("-5.50"),
+      purchases_and_adjustments: BigDecimal("20.25"),
+      fees_charged: BigDecimal("1.00"),
+      interest_charged: BigDecimal("0.0"),
+      new_balance: BigDecimal("25.75"),
+      total_credit_line: BigDecimal("1000.00"),
+      total_credit_available: BigDecimal("974.25"),
+      cash_credit_line: BigDecimal("500.00"),
+      cash_credit_available: BigDecimal("500.00"),
+      statement_closing_date: Date.new(2026, 8, 25),
+      days_in_billing_cycle: 31,
+      current_payment_due: BigDecimal("35.00"),
+      total_minimum_payment_due: BigDecimal("35.00"),
+      payment_due_date: Date.new(2026, 9, 22),
+      fees_ytd: BigDecimal("1.00"),
+      interest_ytd: BigDecimal("0.0")
+    )
+
+    attrs = MonthlyCreditCardStatements::Importer.summary_attributes_for(summary)
+    assert_equal 1000, attrs[:previous_balance_cents]
+    assert_equal(-550, attrs[:payments_and_credits_cents])
+    assert_equal 2575, attrs[:new_balance_cents]
+    assert_equal Date.new(2026, 8, 25), attrs[:statement_closing_date]
+    assert_equal 31, attrs[:days_in_billing_cycle]
+  end
+
+  test "summary_attributes_for returns empty hash when summary missing" do
+    assert_equal({}, MonthlyCreditCardStatements::Importer.summary_attributes_for(nil))
   end
 
   private

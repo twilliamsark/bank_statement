@@ -35,6 +35,30 @@ module MonthlyCreditCardStatements
       end
     end
 
+    def self.summary_attributes_for(summary)
+      return {} if summary.nil?
+
+      {
+        previous_balance_cents: Money.cents(summary.previous_balance),
+        payments_and_credits_cents: Money.cents(summary.payments_and_credits),
+        purchases_and_adjustments_cents: Money.cents(summary.purchases_and_adjustments),
+        fees_charged_cents: Money.cents(summary.fees_charged),
+        interest_charged_cents: Money.cents(summary.interest_charged),
+        new_balance_cents: Money.cents(summary.new_balance),
+        total_credit_line_cents: Money.cents(summary.total_credit_line),
+        total_credit_available_cents: Money.cents(summary.total_credit_available),
+        cash_credit_line_cents: Money.cents(summary.cash_credit_line),
+        cash_credit_available_cents: Money.cents(summary.cash_credit_available),
+        statement_closing_date: summary.statement_closing_date,
+        days_in_billing_cycle: summary.days_in_billing_cycle,
+        current_payment_due_cents: Money.cents(summary.current_payment_due),
+        total_minimum_payment_due_cents: Money.cents(summary.total_minimum_payment_due),
+        payment_due_date: summary.payment_due_date,
+        fees_ytd_cents: Money.cents(summary.fees_ytd),
+        interest_ytd_cents: Money.cents(summary.interest_ytd)
+      }
+    end
+
     private
 
     def extract(source)
@@ -54,14 +78,16 @@ module MonthlyCreditCardStatements
         account = resolve_account!
 
         statement = MonthlyCreditCardStatement.create!(
-          credit_card_account: account,
-          source_filename: source.original_filename,
-          import_format: source.import_format,
-          page_count: gem_result.page_count,
-          period_start: gem_result.period_start,
-          period_end: gem_result.period_end,
-          account_name: gem_result.account_name,
-          account_number: gem_result.account_number
+          {
+            credit_card_account: account,
+            source_filename: source.original_filename,
+            import_format: source.import_format,
+            page_count: gem_result.page_count,
+            period_start: gem_result.period_start,
+            period_end: gem_result.period_end,
+            account_name: gem_result.account_name,
+            account_number: gem_result.account_number
+          }.merge(self.class.summary_attributes_for(gem_result.summary))
         )
         source.attach_to(statement)
 

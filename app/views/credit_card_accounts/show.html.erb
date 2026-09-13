@@ -20,11 +20,7 @@
       </p>
       <h1 class="page-title mt-2"><%= @credit_card_account.name %></h1>
       <p class="page-subtitle">
-        <%= pluralize(@year_end_statements.size, "year-end statement") %>
-        · <%= pluralize(@monthly_statements.size, "monthly statement") %>
-        <% if @years_covered %>
-          · <%= @years_covered.first == @years_covered.last ? @years_covered.first : "#{@years_covered.first}–#{@years_covered.last}" %>
-        <% end %>
+        <%= pluralize(@monthly_statements.size, "monthly statement") %>
         · <%= pluralize(@transaction_count, "transaction") %>
       </p>
     </div>
@@ -49,24 +45,15 @@
     </p>
   </section>
 
-  <section class="grid gap-4 sm:grid-cols-3">
-    <div class="card-pad">
-      <p class="stat-label">Year-end statements</p>
-      <p class="stat-value text-base"><%= @year_end_statements.size %></p>
-    </div>
-    <div class="card-pad">
-      <p class="stat-label">Years covered</p>
-      <p class="stat-value text-base">
-        <% if @years_covered %>
-          <%= @years_covered.first == @years_covered.last ? @years_covered.first : "#{@years_covered.first}–#{@years_covered.last}" %>
-        <% else %>
-          —
-        <% end %>
-      </p>
-    </div>
+  <section class="grid gap-4 sm:grid-cols-2">
     <div class="card-pad">
       <p class="stat-label">Transactions</p>
       <p class="stat-value text-base"><%= @transaction_count %></p>
+    </div>
+    <div class="card-pad">
+      <p class="stat-label">3-year avg spend</p>
+      <p class="stat-value text-base"><%= cents_to_currency(@three_year_avg_spend_cents) %></p>
+      <p class="mt-1 text-xs text-muted">Trailing 3 years ÷ 3</p>
     </div>
   </section>
 
@@ -129,10 +116,13 @@
                   </span>
                 </td>
                 <td><%= statement.unreconciled_transactions.size %></td>
-                <td class="text-right">
+                <td class="space-x-3 text-right">
+                  <%= link_to "View",
+                        monthly_credit_card_statement_path(statement),
+                        class: "font-semibold text-brand-700 hover:text-brand-800" %>
                   <%= link_to "View Unreconciled",
                         monthly_credit_card_statement_unreconciled_transactions_path(statement),
-                        class: "font-semibold text-brand-700 hover:text-brand-800" %>
+                        class: "text-sm font-medium text-slate-600 hover:text-brand-700" %>
                 </td>
               </tr>
             <% end %>
@@ -184,3 +174,4 @@
     <% end %>
   </section>
 </div>
+

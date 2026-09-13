@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_201700) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_13_174752) do
   create_table "account_statements", force: :cascade do |t|
     t.integer "account_id"
     t.string "account_name"
@@ -135,13 +135,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_201700) do
   create_table "monthly_credit_card_statements", force: :cascade do |t|
     t.string "account_name"
     t.string "account_number"
+    t.integer "cash_credit_available_cents"
+    t.integer "cash_credit_line_cents"
     t.datetime "created_at", null: false
     t.integer "credit_card_account_id", null: false
+    t.integer "current_payment_due_cents"
+    t.integer "days_in_billing_cycle"
+    t.integer "fees_charged_cents"
+    t.integer "fees_ytd_cents"
     t.string "import_format"
+    t.integer "interest_charged_cents"
+    t.integer "interest_ytd_cents"
+    t.integer "new_balance_cents"
     t.integer "page_count"
+    t.date "payment_due_date"
+    t.integer "payments_and_credits_cents"
     t.date "period_end"
     t.date "period_start"
+    t.integer "previous_balance_cents"
+    t.integer "purchases_and_adjustments_cents"
     t.string "source_filename"
+    t.date "statement_closing_date"
+    t.integer "total_credit_available_cents"
+    t.integer "total_credit_line_cents"
+    t.integer "total_minimum_payment_due_cents"
     t.datetime "updated_at", null: false
     t.index ["credit_card_account_id"], name: "index_monthly_credit_card_statements_on_credit_card_account_id"
   end

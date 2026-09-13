@@ -41,7 +41,8 @@ class CreditCardAccountSummaryTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_match "Travel Card", response.body
-    assert_match "2024–2025", response.body
+    assert_no_match(/Years covered/, response.body)
+    assert_no_match(/stat-label">Year-end statements/, response.body)
     assert_match "$157.34", response.body # 12.34 + 100 + 45
     assert_no_match(/\$999\.00/, response.body)
 
@@ -51,10 +52,15 @@ class CreditCardAccountSummaryTest < ActionDispatch::IntegrationTest
     assert_match "Hotels", response.body
     assert_match "$100.00", response.body
 
+    assert_match "3-year avg spend", response.body
+    # Trailing 3y total 157.34 / 3 => 52.4467 => $52.45
+    assert_match "$52.45", response.body
+
+    assert_select "a[href=?]", credit_card_account_transactions_path(@account)
     assert_select "a[href=?]", credit_card_statement_path(@year_one)
     assert_select "a[href=?]", credit_card_statement_path(@year_two)
-    assert_select "a[href=?]", credit_card_account_transactions_path(@account)
   end
+
 
   test "index view links to summary show" do
     get credit_card_accounts_path
@@ -62,7 +68,7 @@ class CreditCardAccountSummaryTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", credit_card_account_path(@account), text: "View"
   end
 
-  test "show lists monthly statements above year-end and links to unreconciled" do
+  test "show lists monthly statements and links to unreconciled" do
     older = MonthlyCreditCardStatement.create!(
       credit_card_account: @account,
       source_filename: "older-monthly.csv",

@@ -5,7 +5,7 @@ class MonthlyCreditCardStatementsController < ApplicationController
 
   def index
     @monthly_credit_card_statements = MonthlyCreditCardStatement.order(created_at: :desc)
-      .includes(:credit_card_account, :unreconciled_transactions)
+      .includes(:credit_card_account, :unreconciled_transactions, :credit_card_transactions)
     if params[:credit_card_account_id].present?
       @credit_card_account = CreditCardAccount.find(params[:credit_card_account_id])
       @monthly_credit_card_statements = @monthly_credit_card_statements
@@ -14,7 +14,11 @@ class MonthlyCreditCardStatementsController < ApplicationController
   end
 
   def show
-    redirect_to monthly_credit_card_statement_unreconciled_transactions_path(@monthly_credit_card_statement)
+    @category_totals = @monthly_credit_card_statement.credit_card_transactions
+      .group(:category, :subcategory)
+      .sum(:amount_cents)
+    @unreconciled_count = @monthly_credit_card_statement.unreconciled_transactions.count
+    @committed_count = @monthly_credit_card_statement.credit_card_transactions.count
   end
 
   def new
@@ -53,7 +57,9 @@ class MonthlyCreditCardStatementsController < ApplicationController
   private
 
   def set_monthly_credit_card_statement
-    @monthly_credit_card_statement = MonthlyCreditCardStatement.find(params[:id])
+    @monthly_credit_card_statement = MonthlyCreditCardStatement
+      .includes(:credit_card_account)
+      .find(params[:id])
   end
 
   def import_with_account!(upload)
