@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: https://github.com/twilliamsark/cc_year_end_statement.git
-  revision: cd649b8ef47067fd8c3bc8b440533922b380d305
+  revision: ef26a1d16beb25748e2a2469ce9342ff614b32da
   branch: main
   specs:
     cc_year_end_statement (0.1.0)
