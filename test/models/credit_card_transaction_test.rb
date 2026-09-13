@@ -71,4 +71,28 @@ class CreditCardTransactionTest < ActiveSupport::TestCase
       2.times { @statement.credit_card_transactions.create!(attrs.merge(checksum: checksum)) }
     end
   end
+
+  test "recalculates checksum when category or subcategory change" do
+    txn = @statement.credit_card_transactions.create!(
+      date: Date.new(2025, 6, 1),
+      description: "ONLINE",
+      location: "",
+      amount_cents: 2500,
+      category: "Services",
+      subcategory: "Other Services"
+    )
+    original = txn.checksum
+
+    txn.update!(category: "Merchandise", subcategory: "Clothing")
+    assert_not_equal original, txn.checksum
+    assert_equal CreditCardTransaction.checksum_for(
+      date: txn.date,
+      category: "Merchandise",
+      subcategory: "Clothing",
+      description: txn.description,
+      location: txn.location,
+      amount_cents: txn.amount_cents
+    ), txn.checksum
+  end
 end
+

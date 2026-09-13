@@ -1,18 +1,25 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Dependent subcategory options + auto-submit on change for unreconciled rows.
+// Dependent subcategory options + auto-submit on change.
 export default class extends Controller {
   static targets = ["category", "subcategory"]
   static values = {
-    options: { type: Object, default: {} }
+    options: { type: Object, default: {} },
+    requireSubcategory: { type: Boolean, default: false }
   }
 
   categoryChanged() {
     this.#rebuildSubcategoryOptions()
+    if (this.requireSubcategoryValue && !this.subcategoryTarget.value) {
+      return
+    }
     this.#submit()
   }
 
   subcategoryChanged() {
+    if (this.requireSubcategoryValue && !this.subcategoryTarget.value) {
+      return
+    }
     this.#submit()
   }
 

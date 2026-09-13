@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   end
 
   resources :credit_card_accounts, only: %i[index show] do
-    resources :transactions, only: :index, module: :credit_card_accounts
+    resources :transactions, only: %i[index update], module: :credit_card_accounts
   end
 
   resources :credit_card_statements, only: %i[index show new create destroy] do

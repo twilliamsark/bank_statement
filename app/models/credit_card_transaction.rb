@@ -11,7 +11,7 @@ class CreditCardTransaction < ApplicationRecord
   validates :amount_cents, presence: true, numericality: { only_integer: true }
   validate :exactly_one_parent_statement
 
-  before_validation :assign_checksum, if: -> { checksum.blank? }
+  before_validation :assign_checksum, if: -> { checksum.blank? || will_save_change_to_category? || will_save_change_to_subcategory? }
 
   scope :for_category, ->(category) {
     category.present? ? where(category: category) : all

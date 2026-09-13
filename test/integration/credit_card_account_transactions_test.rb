@@ -105,4 +105,80 @@ class CreditCardAccountTransactionsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href=?]", credit_card_account_transactions_path(@account)
   end
+
+  test "index renders editable category subcategory selects" do
+    get credit_card_account_transactions_path(@account)
+    assert_response :success
+    assert_select "select[name=?]", "credit_card_transaction[category]"
+    assert_select "select[name=?]", "credit_card_transaction[subcategory]"
+  end
+
+  test "patch updates category subcategory and checksum for year-end row" do
+    txn = @year_one.credit_card_transactions.find_by!(description: "STORE A")
+    original_checksum = txn.checksum
+
+    patch credit_card_account_transaction_path(@account, txn), params: {
+      credit_card_transaction: { category: "Services", subcategory: "Other Services" }
+    }
+    assert_redirected_to credit_card_account_transactions_path(@account)
+
+    txn.reload
+    assert_equal "Services", txn.category
+    assert_equal "Other Services", txn.subcategory
+    assert_not_equal original_checksum, txn.checksum
+  end
+
+  test "patch updates monthly-backed row on the same account" do
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: @account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    txn = monthly.credit_card_transactions.create!(
+      date: Date.new(2025, 8, 1),
+      description: "MONTHLY STORE",
+      location: "",
+      amount_cents: 2200,
+      category: "Merchandise",
+      subcategory: "Clothing"
+    )
+
+    patch credit_card_account_transaction_path(@account, txn), params: {
+      credit_card_transaction: { category: "Travel and Transportation", subcategory: "Hotels" }
+    }
+    assert_redirected_to credit_card_account_transactions_path(@account)
+
+    txn.reload
+    assert_equal "Travel and Transportation", txn.category
+    assert_equal "Hotels", txn.subcategory
+  end
+
+  test "patch rejects blank category or subcategory" do
+    txn = @year_one.credit_card_transactions.find_by!(description: "STORE A")
+
+    patch credit_card_account_transaction_path(@account, txn), params: {
+      credit_card_transaction: { category: "Services", subcategory: "" }
+    }
+    assert_redirected_to credit_card_account_transactions_path(@account)
+    assert_equal "Category and subcategory are required.", flash[:alert]
+
+    txn.reload
+    assert_equal "Merchandise", txn.category
+    assert_equal "Clothing", txn.subcategory
+  end
+
+  test "cannot patch transaction belonging to another credit card account" do
+    other_txn = @other.credit_card_transactions.find_by!(description: "OTHER ONLY")
+
+    patch credit_card_account_transaction_path(@account, other_txn), params: {
+      credit_card_transaction: { category: "Services", subcategory: "Other Services" }
+    }
+    assert_response :not_found
+
+    other_txn.reload
+    assert_equal "Merchandise", other_txn.category
+    assert_equal "Clothing", other_txn.subcategory
+  end
 end
+
+

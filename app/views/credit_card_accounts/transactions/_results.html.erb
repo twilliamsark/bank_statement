@@ -11,7 +11,26 @@
   </p>
 
   <% if transactions.any? %>
-    <%= render "credit_card_statements/transactions/table", transactions: transactions, show_statement: true %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Date</th>
+            <th>Statement</th>
+            <th>Category / Subcategory</th>
+            <th>Description</th>
+            <th>Location</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% transactions.each do |txn| %>
+            <%= render "credit_card_accounts/transactions/row", txn: txn %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
     <%= render "shared/pagination", pagination: pagination %>
     <%= render "shared/transaction_results_footer",
           filtered: filtered,
