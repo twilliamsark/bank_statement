@@ -9,46 +9,50 @@
 %>
 <% require_subcategory = local_assigns.fetch(:require_subcategory, false) %>
 <% category_present = record.category.present? %>
-<% category_list_id = dom_id(record, :category_list) %>
-<% subcategory_list_id = dom_id(record, :subcategory_list) %>
 
-<div class="w-40 shrink-0">
+<div class="relative w-40 shrink-0">
   <label class="sr-only" for="<%= dom_id(record, :category) %>">Category</label>
   <%= form.text_field :category,
         id: dom_id(record, :category),
-        list: category_list_id,
         autocomplete: "off",
         placeholder: "Category",
         class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm",
         data: {
           category_subcategory_target: "category",
-          action: "pointerdown->category-subcategory#categoryPointerDown focus->category-subcategory#categoryFocused blur->category-subcategory#categoryBlurred input->category-subcategory#categoryInput change->category-subcategory#categoryChanged"
+          action: [
+            "focus->category-subcategory#categoryFocused",
+            "input->category-subcategory#categoryInput",
+            "keydown->category-subcategory#categoryKeydown",
+            "change->category-subcategory#categoryChanged"
+          ].join(" ")
         } %>
-  <datalist id="<%= category_list_id %>">
-    <% categories.each do |name| %>
-      <option value="<%= name %>"></option>
-    <% end %>
-  </datalist>
+  <ul
+    data-category-subcategory-target="categoryMenu"
+    class="absolute left-0 right-0 z-30 mt-1 hidden max-h-48 overflow-auto rounded-lg border border-line bg-white py-1 text-sm shadow-lg"
+    role="listbox"
+  ></ul>
 </div>
 
-<div class="w-40 shrink-0">
+<div class="relative w-40 shrink-0">
   <label class="sr-only" for="<%= dom_id(record, :subcategory) %>">Subcategory</label>
   <%= form.text_field :subcategory,
         id: dom_id(record, :subcategory),
-        list: subcategory_list_id,
         autocomplete: "off",
         placeholder: (category_present ? "Subcategory" : "Enter category first"),
         disabled: !category_present,
         class: "w-full rounded-lg border border-line px-2 py-1.5 text-sm #{'opacity-50 cursor-not-allowed' unless category_present}",
         data: {
           category_subcategory_target: "subcategory",
-          action: "pointerdown->category-subcategory#subcategoryPointerDown focus->category-subcategory#subcategoryFocused blur->category-subcategory#subcategoryBlurred change->category-subcategory#subcategoryChanged"
+          action: [
+            "focus->category-subcategory#subcategoryFocused",
+            "input->category-subcategory#subcategoryInput",
+            "keydown->category-subcategory#subcategoryKeydown",
+            "change->category-subcategory#subcategoryChanged"
+          ].join(" ")
         } %>
-  <datalist id="<%= subcategory_list_id %>" data-category-subcategory-target="subcategoryList">
-    <% if category_present %>
-      <% subcategories.each do |name| %>
-        <option value="<%= name %>"></option>
-      <% end %>
-    <% end %>
-  </datalist>
+  <ul
+    data-category-subcategory-target="subcategoryMenu"
+    class="absolute left-0 right-0 z-30 mt-1 hidden max-h-48 overflow-auto rounded-lg border border-line bg-white py-1 text-sm shadow-lg"
+    role="listbox"
+  ></ul>
 </div>

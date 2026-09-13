@@ -106,13 +106,15 @@ class CreditCardAccountTransactionsTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", credit_card_account_transactions_path(@account)
   end
 
-  test "index renders editable category subcategory text fields with suggestions" do
+  test "index renders editable category subcategory text fields with suggestion menus" do
     get credit_card_account_transactions_path(@account)
     assert_response :success
     assert_select "input[name=?]", "credit_card_transaction[category]"
     assert_select "input[name=?]", "credit_card_transaction[subcategory]"
-    assert_select "datalist option[value=?]", "Merchandise"
+    assert_select "[data-category-subcategory-target='categoryMenu']"
+    assert_select "[data-category-subcategory-target='subcategoryMenu']"
   end
+
 
 
   test "patch updates category subcategory and checksum for year-end row" do
@@ -197,9 +199,10 @@ class CreditCardAccountTransactionsTest < ActionDispatch::IntegrationTest
     assert_not_equal original_checksum, txn.checksum
 
     get credit_card_account_transactions_path(@account)
-    assert_select "datalist option[value=?]", "Brand New Category"
+    assert_match(/Brand New Category/, response.body)
   end
 end
+
 
 
 

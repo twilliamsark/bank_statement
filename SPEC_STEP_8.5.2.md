@@ -167,10 +167,17 @@ Not category-specific, but done in the same polish pass for transaction tables:
 
 ### Locked behavior summary (combobox)
 
+Applies to **both** surfaces: account transactions **and** unreconciled transactions (shared `category-subcategory` Stimulus + `shared/_category_subcategory_fields`).
+
 | Action | Result |
 | ------ | ------ |
 | No category | Subcategory disabled / cleared |
-| Change category | Subcategory cleared; suggestions rebuild for new category |
-| Focus category/subcategory (click) | Input clears so full datalist shows; blur restores if unchanged |
-| Turbo re-focus after save | Does **not** clear the field |
-| Pick subcategory | Value saves and stays visible immediately |
+| Change category | Subcategory cleared; **do not PATCH until subcategory is chosen**; focus moves to subcategory and opens its suggestion menu |
+| Focus category/subcategory | Opens a **custom suggestion menu** with all options (native `<datalist>` abandoned — too unreliable across focus/arrow/Turbo) |
+| Type in field | Filters the open menu; free-text values still allowed on change/blur |
+| Pick from menu | Sets the field and saves (subcategory) / continues to subcategory (category) |
+| Click outside | Closes menus |
+
+**Unreconciled note:** Uses the same shared combobox (`requireSubcategory: true`) so category change does not Turbo-refresh mid-edit.
+
+**Implementation note:** Suggestions are rendered in Stimulus-managed `<ul>` menus under each input, not browser datalists.

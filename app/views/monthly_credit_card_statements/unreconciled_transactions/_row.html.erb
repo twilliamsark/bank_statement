@@ -13,7 +13,9 @@
           class: "flex flex-nowrap items-center gap-2",
           data: {
             controller: "category-subcategory",
+            category_subcategory_categories_value: @categories.to_json,
             category_subcategory_options_value: @subcategories_by_category.to_json,
+            category_subcategory_require_subcategory_value: true,
             turbo: true
           } do |f| %>
       <% %i[date_from date_to category subcategory description amount page].each do |key| %>
@@ -24,7 +26,9 @@
             record: txn,
             categories: @categories,
             subcategories: subcategories,
-            subcategories_by_category: @subcategories_by_category %>
+            subcategories_by_category: @subcategories_by_category,
+            require_subcategory: true %>
     <% end %>
+
   </td>
 </tr>

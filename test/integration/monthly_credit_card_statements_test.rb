@@ -100,8 +100,10 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name=?]", "unreconciled_transaction[category]"
     assert_select "input[name=?]", "unreconciled_transaction[subcategory]"
-    assert_select "datalist option[value=?]", "Merchandise"
+    assert_select "[data-category-subcategory-target='categoryMenu']"
+    assert_select "[data-category-subcategory-target='subcategoryMenu']"
     assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly), count: 0
+
 
     patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
       unreconciled_transaction: { category: "Merchandise", subcategory: "Clothing" }
@@ -250,8 +252,9 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     staging.reload
     assert_equal "Custom Spend", staging.category
     assert_equal "Widgets", staging.subcategory
-    assert_select "datalist option[value=?]", "Custom Spend"
+    assert_match(/Custom Spend/, response.body)
     assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly)
+
 
     assert_difference -> { CreditCardTransaction.where(monthly_credit_card_statement_id: monthly.id).count }, 1 do
       post monthly_credit_card_statement_save_reconciled_path(monthly)

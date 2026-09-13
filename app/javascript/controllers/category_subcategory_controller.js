@@ -1,70 +1,64 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Combobox-style category/subcategory with datalist suggestions + auto-submit.
+// Text fields + custom suggestion menus (avoids flaky native datalist behavior).
 export default class extends Controller {
-  static targets = ["category", "subcategory", "subcategoryList"]
+  static targets = ["category", "subcategory", "categoryMenu", "subcategoryMenu"]
   static values = {
     options: { type: Object, default: {} },
+    categories: { type: Array, default: [] },
     requireSubcategory: { type: Boolean, default: false }
   }
 
   connect() {
-    this.#rebuildSubcategoryOptions({ clearIfInvalid: false })
+    this.previousCategory = this.#trimmed(this.categoryTarget.value)
     this.#syncSubcategoryEnabled()
+    this._onPointerDown = this.#onDocumentPointerDown.bind(this)
+    document.addEventListener("pointerdown", this._onPointerDown)
   }
 
-  // Mark the next focus as user-initiated. Turbo often restores focus after a
-  // stream update; that should NOT clear the field (which looked like a blank
-  // selection until blur restored the value).
-  categoryPointerDown() {
-    this.categoryFocusFromUser = true
+  disconnect() {
+    document.removeEventListener("pointerdown", this._onPointerDown)
   }
 
-  subcategoryPointerDown() {
-    this.subcategoryFocusFromUser = true
+  categoryFocused() {
+    this.#hideMenu(this.subcategoryMenuTarget)
+    this.#showCategoryMenu()
   }
 
   categoryInput() {
     this.#syncSubcategoryEnabled()
+    this.#showCategoryMenu(this.#trimmed(this.categoryTarget.value))
   }
 
-  categoryFocused() {
-    if (!this.categoryFocusFromUser) return
-    this.categoryFocusFromUser = false
-
-    this.categoryValueBeforeFocus = this.categoryTarget.value
-    this.categoryTarget.value = ""
-  }
-
-  categoryBlurred() {
-    if (!this.#trimmed(this.categoryTarget.value) && this.categoryValueBeforeFocus != null) {
-      this.categoryTarget.value = this.categoryValueBeforeFocus
+  categoryKeydown(event) {
+    if (event.key === "Escape") {
+      this.#hideMenu(this.categoryMenuTarget)
     }
   }
 
   categoryChanged() {
-    const previousCategory = this.#trimmed(this.categoryValueBeforeFocus)
     const nextCategory = this.#trimmed(this.categoryTarget.value)
-    this.categoryValueBeforeFocus = null
+    const previousCategory = this.#trimmed(this.previousCategory)
+    this.previousCategory = nextCategory
+    this.#hideMenu(this.categoryMenuTarget)
 
-    // Focus+blur with no real edit can still fire change; ignore no-ops.
     if (nextCategory === previousCategory) {
       this.#syncSubcategoryEnabled()
       return
     }
 
-    // Any real category change clears subcategory so the user picks a valid pair.
     this.subcategoryTarget.value = ""
-    this.subcategoryValueBeforeFocus = null
-    this.#rebuildSubcategoryOptions({ clearIfInvalid: false })
     this.#syncSubcategoryEnabled()
 
     if (!nextCategory) {
+      this.#hideMenu(this.subcategoryMenuTarget)
       this.#submit()
       return
     }
 
     if (this.requireSubcategoryValue) {
+      this.subcategoryTarget.focus()
+      this.#showSubcategoryMenu()
       return
     }
 
@@ -72,32 +66,99 @@ export default class extends Controller {
   }
 
   subcategoryFocused() {
-    if (!this.subcategoryFocusFromUser) return
-    this.subcategoryFocusFromUser = false
-
     if (!this.#trimmed(this.categoryTarget.value)) return
-
-    this.#rebuildSubcategoryOptions({ clearIfInvalid: false })
-    this.subcategoryValueBeforeFocus = this.subcategoryTarget.value
-    this.subcategoryTarget.value = ""
+    this.#hideMenu(this.categoryMenuTarget)
+    this.#showSubcategoryMenu()
   }
 
-  subcategoryBlurred() {
-    if (!this.#trimmed(this.subcategoryTarget.value) && this.subcategoryValueBeforeFocus != null) {
-      this.subcategoryTarget.value = this.subcategoryValueBeforeFocus
+  subcategoryInput() {
+    if (!this.#trimmed(this.categoryTarget.value)) return
+    this.#showSubcategoryMenu(this.#trimmed(this.subcategoryTarget.value))
+  }
+
+  subcategoryKeydown(event) {
+    if (event.key === "Escape") {
+      this.#hideMenu(this.subcategoryMenuTarget)
     }
-    this.subcategoryValueBeforeFocus = null
   }
 
   subcategoryChanged() {
-    this.subcategoryValueBeforeFocus = null
-    if (!this.#trimmed(this.categoryTarget.value)) {
-      return
-    }
-    if (this.requireSubcategoryValue && !this.#trimmed(this.subcategoryTarget.value)) {
-      return
-    }
+    this.#hideMenu(this.subcategoryMenuTarget)
+    if (!this.#trimmed(this.categoryTarget.value)) return
+    if (this.requireSubcategoryValue && !this.#trimmed(this.subcategoryTarget.value)) return
     this.#submit()
+  }
+
+  pickCategory(event) {
+    event.preventDefault()
+    const value = event.currentTarget.dataset.value || ""
+    this.categoryTarget.value = value
+    this.#hideMenu(this.categoryMenuTarget)
+    this.categoryTarget.dispatchEvent(new Event("change", { bubbles: true }))
+  }
+
+  pickSubcategory(event) {
+    event.preventDefault()
+    const value = event.currentTarget.dataset.value || ""
+    this.subcategoryTarget.value = value
+    this.#hideMenu(this.subcategoryMenuTarget)
+    this.subcategoryTarget.dispatchEvent(new Event("change", { bubbles: true }))
+  }
+
+  #showCategoryMenu(filter = "") {
+    const items = this.#filtered(this.categoriesValue, filter)
+    this.#renderMenu(this.categoryMenuTarget, items, "pickCategory")
+    this.#revealMenu(this.categoryMenuTarget)
+  }
+
+  #showSubcategoryMenu(filter = "") {
+    const category = this.#trimmed(this.categoryTarget.value)
+    const items = this.#filtered(this.optionsValue[category] || [], filter)
+    this.#renderMenu(this.subcategoryMenuTarget, items, "pickSubcategory")
+    this.#revealMenu(this.subcategoryMenuTarget)
+  }
+
+  #filtered(items, filter) {
+    const needle = (filter || "").toLowerCase()
+    if (!needle) return items
+    return items.filter((item) => item.toLowerCase().includes(needle))
+  }
+
+  #renderMenu(menu, items, actionName) {
+    menu.innerHTML = ""
+    if (items.length === 0) {
+      const empty = document.createElement("li")
+      empty.className = "px-3 py-2 text-muted"
+      empty.textContent = "No matches — type a new value"
+      menu.append(empty)
+      return
+    }
+
+    items.forEach((item) => {
+      const li = document.createElement("li")
+      const button = document.createElement("button")
+      button.type = "button"
+      button.className = "block w-full px-3 py-1.5 text-left text-ink hover:bg-brand-50"
+      button.dataset.value = item
+      button.dataset.action = `mousedown->category-subcategory#${actionName}`
+      button.textContent = item
+      li.append(button)
+      menu.append(li)
+    })
+  }
+
+  #revealMenu(menu) {
+    menu.classList.remove("hidden")
+  }
+
+  #hideMenu(menu) {
+    menu.classList.add("hidden")
+  }
+
+  #onDocumentPointerDown(event) {
+    if (this.element.contains(event.target)) return
+    this.#hideMenu(this.categoryMenuTarget)
+    this.#hideMenu(this.subcategoryMenuTarget)
   }
 
   #syncSubcategoryEnabled() {
@@ -109,38 +170,8 @@ export default class extends Controller {
 
     if (!hasCategory) {
       this.subcategoryTarget.value = ""
-      if (this.hasSubcategoryListTarget) {
-        this.subcategoryListTarget.innerHTML = ""
-      }
+      this.#hideMenu(this.subcategoryMenuTarget)
     }
-  }
-
-  #rebuildSubcategoryOptions({ clearIfInvalid }) {
-    if (!this.hasSubcategoryListTarget) return
-
-    const selectedCategory = this.#trimmed(this.categoryTarget.value)
-    if (!selectedCategory) {
-      this.subcategoryListTarget.innerHTML = ""
-      return
-    }
-
-    const options = this.optionsValue[selectedCategory] || []
-    const previous = this.#trimmed(this.subcategoryTarget.value)
-
-    this.subcategoryListTarget.innerHTML = ""
-    options.forEach((name) => {
-      this.subcategoryListTarget.append(this.#option(name))
-    })
-
-    if (clearIfInvalid && previous && !options.includes(previous)) {
-      this.subcategoryTarget.value = ""
-    }
-  }
-
-  #option(value) {
-    const option = document.createElement("option")
-    option.value = value
-    return option
   }
 
   #trimmed(value) {
@@ -148,7 +179,6 @@ export default class extends Controller {
   }
 
   #submit() {
-    // Disabled fields are omitted from form data; re-enable so cleared subcategory is sent.
     const wasDisabled = this.subcategoryTarget.disabled
     this.subcategoryTarget.disabled = false
 
