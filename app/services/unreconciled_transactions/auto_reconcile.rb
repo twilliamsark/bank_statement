@@ -14,7 +14,8 @@ module UnreconciledTransactions
 
     def call
       account = @statement.credit_card_account
-      year_end_txns = account.credit_card_transactions.to_a
+      # Year-end and already-committed monthly rows on this card.
+      committed_txns = account.all_credit_card_transactions.to_a
 
       examined_count = 0
       reconciled_count = 0
@@ -27,7 +28,7 @@ module UnreconciledTransactions
         end
 
         examined_count += 1
-        pair = unanimous_category_pair(staging, year_end_txns)
+        pair = unanimous_category_pair(staging, committed_txns)
         if pair
           staging.update!(category: pair[0], subcategory: pair[1])
           reconciled_count += 1
@@ -45,9 +46,9 @@ module UnreconciledTransactions
 
     private
 
-    def unanimous_category_pair(staging, year_end_txns)
+    def unanimous_category_pair(staging, committed_txns)
       prefix = CreditCardTransaction.category_match_prefix(staging.description)
-      pairs = year_end_txns
+      pairs = committed_txns
         .select { |txn| CreditCardTransaction.category_match_prefix(txn.description) == prefix }
         .map { |txn| [ txn.category, txn.subcategory ] }
         .uniq

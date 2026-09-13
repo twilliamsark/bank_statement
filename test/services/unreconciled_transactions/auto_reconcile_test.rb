@@ -146,6 +146,33 @@ class UnreconciledTransactions::AutoReconcileTest < ActiveSupport::TestCase
     assert_nil staging.subcategory
   end
 
+  test "fills from previously committed monthly transactions on the same account" do
+    prior_monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: @account,
+      source_filename: "prior-monthly.csv",
+      import_format: "csv"
+    )
+    prior_monthly.credit_card_transactions.create!(
+      date: Date.new(2025, 7, 1),
+      description: "UDEMY: ONLINE COURSES UDEMY.COM CA",
+      location: "",
+      amount_cents: 1084,
+      category: "Education",
+      subcategory: "Education"
+    )
+    staging = create_staging!(
+      description: "UDEMY: ONLINE COURSES UDEMY.COM CA",
+      amount_cents: 1518
+    )
+
+    result = UnreconciledTransactions::AutoReconcile.call(monthly_credit_card_statement: @monthly)
+
+    assert_equal 1, result.reconciled_count
+    staging.reload
+    assert_equal "Education", staging.category
+    assert_equal "Education", staging.subcategory
+  end
+
   private
 
   def create_year_end_txn!(description:, amount_cents:, category:, subcategory:)
@@ -169,3 +196,4 @@ class UnreconciledTransactions::AutoReconcileTest < ActiveSupport::TestCase
     )
   end
 end
+
