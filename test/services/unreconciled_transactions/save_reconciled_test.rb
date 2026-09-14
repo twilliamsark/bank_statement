@@ -63,15 +63,39 @@ class UnreconciledTransactions::SaveReconciledTest < ActiveSupport::TestCase
     assert_equal 1, @account.monthly_credit_card_transactions.count
   end
 
+  test "skips potential duplicate rows even when categorized" do
+    flagged = create_staging!(
+      description: "DUP HOTEL",
+      amount_cents: 10000,
+      category: "Travel and Transportation",
+      subcategory: "Hotels",
+      potential_duplicate: true
+    )
+    ready = create_staging!(
+      description: "NORMAL STORE",
+      amount_cents: 2500,
+      category: "Merchandise",
+      subcategory: "Clothing"
+    )
+
+    result = UnreconciledTransactions::SaveReconciled.call(monthly_credit_card_statement: @monthly)
+
+    assert_equal 1, result.saved_count
+    assert_equal 1, result.remaining_count
+    assert UnreconciledTransaction.exists?(flagged.id)
+    assert_not UnreconciledTransaction.exists?(ready.id)
+  end
+
   private
 
-  def create_staging!(description:, amount_cents:, category: nil, subcategory: nil)
+  def create_staging!(description:, amount_cents:, category: nil, subcategory: nil, potential_duplicate: false)
     @monthly.unreconciled_transactions.create!(
       date: Date.new(2025, 8, 1),
       description: description,
       amount_cents: amount_cents,
       category: category,
-      subcategory: subcategory
+      subcategory: subcategory,
+      potential_duplicate: potential_duplicate
     )
   end
 end

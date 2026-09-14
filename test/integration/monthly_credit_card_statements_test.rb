@@ -347,6 +347,79 @@ class MonthlyCreditCardStatementsTest < ActionDispatch::IntegrationTest
     assert_match "Hotels", response.body
   end
 
+  test "potential duplicate badge and clear flag make row eligible for save" do
+    account = create_credit_card_account!(name: "Travel Card")
+    monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "monthly.csv",
+      import_format: "csv"
+    )
+    staging = monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 8, 10),
+      description: "DUP STORE",
+      amount_cents: 2500,
+      category: "Merchandise",
+      subcategory: "Clothing",
+      potential_duplicate: true
+    )
+
+    get monthly_credit_card_statement_unreconciled_transactions_path(monthly)
+    assert_response :success
+    assert_match "Potential duplicate", response.body
+    assert_match "Clear duplicate flag", response.body
+    assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly), count: 0
+
+    patch monthly_credit_card_statement_unreconciled_transaction_path(monthly, staging), params: {
+      unreconciled_transaction: { potential_duplicate: false }
+    }
+    assert_response :redirect
+    follow_redirect!
+    staging.reload
+    assert_not staging.potential_duplicate?
+    assert_no_match(/Potential duplicate/, response.body)
+    assert_select "form[action=?]", monthly_credit_card_statement_save_reconciled_path(monthly)
+
+    assert_difference -> { CreditCardTransaction.count }, 1 do
+      assert_difference -> { UnreconciledTransaction.count }, -1 do
+        post monthly_credit_card_statement_save_reconciled_path(monthly)
+      end
+    end
+  end
+
+  test "import flash reports potential duplicate count" do
+    account = create_credit_card_account!(name: "Travel Card")
+    year_end = CreditCardStatement.create!(
+      credit_card_account: account,
+      statement_year: 2025,
+      source_filename: "year_end.csv",
+      import_format: "csv"
+    )
+    year_end.credit_card_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      location: "",
+      amount_cents: 1234,
+      category: "Merchandise",
+      subcategory: "Clothing"
+    )
+
+    upload = csv_upload(<<~CSV, "monthly.csv")
+      transaction_date|posting_date|section|description|reference_number|amount
+      2025-03-01|2025-03-02|Purchases and Adjustments|STORE A|REF1|12.34
+    CSV
+
+    post monthly_credit_card_statements_path, params: {
+      file: upload,
+      account_mode: "existing",
+      credit_card_account_id: account.id
+    }
+    follow_redirect!
+
+    assert_match(/Staged 1 transactions/, flash[:notice])
+    assert_match(/1 potential duplicate flagged/, flash[:notice])
+    assert_match "Potential duplicate", response.body
+  end
+
   private
 
   def csv_upload(contents, filename)

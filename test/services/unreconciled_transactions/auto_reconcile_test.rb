@@ -173,6 +173,29 @@ class UnreconciledTransactions::AutoReconcileTest < ActiveSupport::TestCase
     assert_equal "Education", staging.subcategory
   end
 
+  test "skips potential duplicate rows" do
+    create_year_end_txn!(
+      description: "HOTEL STAY DOWNTOWN ABC EXTRA",
+      amount_cents: 10000,
+      category: "Travel and Transportation",
+      subcategory: "Hotels"
+    )
+    staging = create_staging!(
+      description: "HOTEL STAY DOWNTOWN ABC MONTHLY",
+      amount_cents: 10000,
+      potential_duplicate: true
+    )
+
+    result = UnreconciledTransactions::AutoReconcile.call(monthly_credit_card_statement: @monthly)
+
+    assert_equal 0, result.examined_count
+    assert_equal 0, result.reconciled_count
+    assert_equal 1, result.skipped_count
+    staging.reload
+    assert_nil staging.category
+    assert_nil staging.subcategory
+  end
+
   private
 
   def create_year_end_txn!(description:, amount_cents:, category:, subcategory:)
@@ -186,13 +209,14 @@ class UnreconciledTransactions::AutoReconcileTest < ActiveSupport::TestCase
     )
   end
 
-  def create_staging!(description:, amount_cents:, category: nil, subcategory: nil)
+  def create_staging!(description:, amount_cents:, category: nil, subcategory: nil, potential_duplicate: false)
     @monthly.unreconciled_transactions.create!(
       date: Date.new(2025, 8, 1),
       description: description,
       amount_cents: amount_cents,
       category: category,
-      subcategory: subcategory
+      subcategory: subcategory,
+      potential_duplicate: potential_duplicate
     )
   end
 end

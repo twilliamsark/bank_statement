@@ -22,6 +22,11 @@ module UnreconciledTransactions
       skipped_count = 0
 
       @statement.unreconciled_transactions.find_each do |staging|
+        if staging.potential_duplicate?
+          skipped_count += 1
+          next
+        end
+
         if staging.category.present? && staging.subcategory.present?
           skipped_count += 1
           next

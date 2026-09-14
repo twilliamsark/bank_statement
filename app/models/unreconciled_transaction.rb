@@ -25,6 +25,6 @@ class UnreconciledTransaction < ApplicationRecord
   end
 
   def ready_to_save?
-    category.present? && subcategory.present?
+    !potential_duplicate? && category.present? && subcategory.present?
   end
 end

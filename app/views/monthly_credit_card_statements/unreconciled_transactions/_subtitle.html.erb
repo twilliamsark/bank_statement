@@ -8,4 +8,7 @@
   <% if @ready_to_save_count.positive? %>
     · <%= pluralize(@ready_to_save_count, "ready to save") %>
   <% end %>
+  <% if @potential_duplicate_count.positive? %>
+    · <%= pluralize(@potential_duplicate_count, "potential duplicate") %>
+  <% end %>
 </p>

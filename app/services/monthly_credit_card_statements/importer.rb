@@ -2,7 +2,7 @@
 
 module MonthlyCreditCardStatements
   class Importer
-    Result = Data.define(:statement, :staged_count)
+    Result = Data.define(:statement, :staged_count, :potential_duplicate_count)
 
     def self.call(...)
       new(...).call
@@ -73,6 +73,7 @@ module MonthlyCreditCardStatements
     def persist(source, gem_result)
       statement = nil
       staged_count = 0
+      potential_duplicate_count = 0
 
       ActiveRecord::Base.transaction do
         account = resolve_account!
@@ -91,19 +92,52 @@ module MonthlyCreditCardStatements
         )
         source.attach_to(statement)
 
+        known_fingerprints = known_fingerprints_for(account)
+
         gem_result.transactions.each do |gem_txn|
+          amount_cents = Money.cents(gem_txn.amount)
+          fingerprint = UnreconciledTransaction.import_fingerprint_for(
+            date: gem_txn.transaction_date,
+            description: gem_txn.description,
+            amount_cents: amount_cents
+          )
+          is_duplicate = known_fingerprints.include?(fingerprint)
+
           statement.unreconciled_transactions.create!(
             date: gem_txn.transaction_date,
             description: gem_txn.description,
-            amount_cents: Money.cents(gem_txn.amount),
+            amount_cents: amount_cents,
             category: nil,
-            subcategory: nil
+            subcategory: nil,
+            import_fingerprint: fingerprint,
+            potential_duplicate: is_duplicate
           )
+
           staged_count += 1
+          if is_duplicate
+            potential_duplicate_count += 1
+          else
+            known_fingerprints.add(fingerprint)
+          end
         end
       end
 
-      Result.new(statement: statement, staged_count: staged_count)
+      Result.new(
+        statement: statement,
+        staged_count: staged_count,
+        potential_duplicate_count: potential_duplicate_count
+      )
+    end
+
+    def known_fingerprints_for(account)
+      staging = UnreconciledTransaction
+        .joins(:monthly_credit_card_statement)
+        .where(monthly_credit_card_statements: { credit_card_account_id: account.id })
+        .pluck(:import_fingerprint)
+
+      committed = account.all_credit_card_transactions.pluck(:import_fingerprint)
+
+      Set.new(staging + committed)
     end
 
     def resolve_account!

@@ -82,6 +82,22 @@ class UnreconciledTransactionTest < ActiveSupport::TestCase
     assert_nil txn.category
     assert_nil txn.subcategory
   end
+
+  test "ready_to_save requires categories and no potential duplicate flag" do
+    txn = @statement.unreconciled_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      amount_cents: 1234,
+      category: "Merchandise",
+      subcategory: "Clothing",
+      potential_duplicate: true
+    )
+
+    assert_not txn.ready_to_save?
+
+    txn.update!(potential_duplicate: false)
+    assert txn.ready_to_save?
+  end
 end
 
 

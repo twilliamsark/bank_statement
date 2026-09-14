@@ -4,7 +4,7 @@ Parent: [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (overall Step 8 design)
 Prior: [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md) (`import_fingerprint` on staging)  
 Related: [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md) (Auto Reconcile), [`SPEC_STEP_8.3.md`](./SPEC_STEP_8.3.md) (Save Reconciled)
 
-Status: **Not started**
+Status: **Done**
 
 ---
 

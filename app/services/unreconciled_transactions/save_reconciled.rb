@@ -41,15 +41,10 @@ module UnreconciledTransactions
     private
 
     def eligible
-      scope = @statement.unreconciled_transactions
+      @statement.unreconciled_transactions
+        .where(potential_duplicate: false)
         .where.not(category: [ nil, "" ])
         .where.not(subcategory: [ nil, "" ])
-
-      if UnreconciledTransaction.column_names.include?("potential_duplicate")
-        scope = scope.where(potential_duplicate: false)
-      end
-
-      scope
     end
   end
 end

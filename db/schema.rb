@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_13_174752) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_171926) do
   create_table "account_statements", force: :cascade do |t|
     t.integer "account_id"
     t.string "account_name"
@@ -171,10 +171,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_174752) do
     t.text "description", null: false
     t.string "import_fingerprint", null: false
     t.integer "monthly_credit_card_statement_id", null: false
+    t.boolean "potential_duplicate", default: false, null: false
     t.string "subcategory"
     t.datetime "updated_at", null: false
     t.index ["amount_cents"], name: "index_unreconciled_transactions_on_amount_cents"
     t.index ["import_fingerprint"], name: "index_unreconciled_transactions_on_import_fingerprint"
+    t.index ["monthly_credit_card_statement_id", "potential_duplicate"], name: "idx_unreconciled_on_statement_and_potential_duplicate"
     t.index ["monthly_credit_card_statement_id"], name: "idx_on_monthly_credit_card_statement_id_eed6fc13f7"
   end
 

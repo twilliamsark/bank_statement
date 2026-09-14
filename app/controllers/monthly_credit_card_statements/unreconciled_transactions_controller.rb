@@ -58,7 +58,12 @@ module MonthlyCreditCardStatements
     def load_unreconciled_index
       base = @monthly_credit_card_statement.unreconciled_transactions
       @total_count = base.count
-      @ready_to_save_count = base.where.not(category: [ nil, "" ]).where.not(subcategory: [ nil, "" ]).count
+      @ready_to_save_count = base
+        .where(potential_duplicate: false)
+        .where.not(category: [ nil, "" ])
+        .where.not(subcategory: [ nil, "" ])
+        .count
+      @potential_duplicate_count = base.where(potential_duplicate: true).count
 
       filtered = UnreconciledTransaction.apply_filters(base, filter_params)
       @filtered_count = filtered.count
@@ -78,7 +83,18 @@ module MonthlyCreditCardStatements
     end
 
     def unreconciled_transaction_params
-      params.require(:unreconciled_transaction).permit(:category, :subcategory).to_h.transform_values(&:presence)
+      permitted = params.require(:unreconciled_transaction).permit(:category, :subcategory, :potential_duplicate)
+      attrs = {}
+
+      attrs[:category] = permitted[:category].presence if permitted.key?(:category)
+      attrs[:subcategory] = permitted[:subcategory].presence if permitted.key?(:subcategory)
+
+      if permitted.key?(:potential_duplicate)
+        value = ActiveModel::Type::Boolean.new.cast(permitted[:potential_duplicate])
+        attrs[:potential_duplicate] = false if value == false
+      end
+
+      attrs
     end
   end
 end

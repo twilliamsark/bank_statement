@@ -43,7 +43,7 @@ class MonthlyCreditCardStatementsController < ApplicationController
 
     result = import_with_account!(upload)
     redirect_to monthly_credit_card_statement_unreconciled_transactions_path(result.statement),
-                notice: "Staged #{result.staged_count} transactions for reconciliation."
+                notice: import_notice(result)
   rescue Imports::Error, ActiveRecord::RecordNotFound => e
     redirect_to new_monthly_credit_card_statement_path(credit_card_account_id: params[:credit_card_account_id]),
                 alert: e.message
@@ -80,5 +80,15 @@ class MonthlyCreditCardStatementsController < ApplicationController
     else
       raise Imports::Error, "Please choose an existing credit card or enter a new name."
     end
+  end
+
+  def import_notice(result)
+    notice = "Staged #{result.staged_count} transactions for reconciliation."
+    if result.potential_duplicate_count.positive?
+      count = result.potential_duplicate_count
+      label = count == 1 ? "potential duplicate" : "potential duplicates"
+      notice += " #{count} #{label} flagged."
+    end
+    notice
   end
 end

@@ -16,6 +16,7 @@ class MonthlyCreditCardStatements::ImporterTest < ActiveSupport::TestCase
     result = MonthlyCreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
 
     assert_equal 3, result.staged_count
+    assert_equal 0, result.potential_duplicate_count
     statement = result.statement
     assert_kind_of MonthlyCreditCardStatement, statement
     assert_equal "csv", statement.import_format
@@ -30,6 +31,7 @@ class MonthlyCreditCardStatements::ImporterTest < ActiveSupport::TestCase
     assert_equal 10000, hotel.amount_cents
     assert_nil hotel.category
     assert_nil hotel.subcategory
+    assert_not hotel.potential_duplicate?
     assert hotel.import_fingerprint.present?
     assert_equal UnreconciledTransaction.import_fingerprint_for(
       date: hotel.date,
@@ -38,7 +40,7 @@ class MonthlyCreditCardStatements::ImporterTest < ActiveSupport::TestCase
     ), hotel.import_fingerprint
   end
 
-  test "allows duplicate fingerprints within a single import" do
+  test "allows duplicate fingerprints within a single import and flags the later row" do
     path = write_csv(<<~CSV)
       transaction_date|posting_date|section|description|reference_number|amount
       2025-01-15|2025-01-16|Purchases and Adjustments|COFFEE|REF1|4.50
@@ -48,7 +50,89 @@ class MonthlyCreditCardStatements::ImporterTest < ActiveSupport::TestCase
     result = MonthlyCreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
 
     assert_equal 2, result.staged_count
-    assert_equal 2, result.statement.unreconciled_transactions.count
+    assert_equal 1, result.potential_duplicate_count
+    rows = result.statement.unreconciled_transactions.order(:id).to_a
+    assert_equal 2, rows.size
+    assert_not rows.first.potential_duplicate?
+    assert rows.second.potential_duplicate?
+  end
+
+  test "flags staging row when fingerprint already exists on committed same-account transaction" do
+    account = create_credit_card_account!(name: "Travel Card")
+    year_end = CreditCardStatement.create!(
+      credit_card_account: account,
+      statement_year: 2025,
+      source_filename: "year_end.csv",
+      import_format: "csv"
+    )
+    year_end.credit_card_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      location: "",
+      amount_cents: 1234,
+      category: "Merchandise",
+      subcategory: "Clothing"
+    )
+
+    path = write_csv(<<~CSV)
+      transaction_date|posting_date|section|description|reference_number|amount
+      2025-03-01|2025-03-02|Purchases and Adjustments|STORE A|REF1|12.34
+    CSV
+
+    result = MonthlyCreditCardStatements::Importer.call(path: path, credit_card_account: account)
+
+    assert_equal 1, result.staged_count
+    assert_equal 1, result.potential_duplicate_count
+    staging = result.statement.unreconciled_transactions.sole
+    assert staging.potential_duplicate?
+  end
+
+  test "flags staging row when fingerprint already exists on another staging row for same account" do
+    account = create_credit_card_account!(name: "Travel Card")
+    prior = MonthlyCreditCardStatement.create!(
+      credit_card_account: account,
+      source_filename: "prior.csv",
+      import_format: "csv"
+    )
+    prior.unreconciled_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      amount_cents: 1234
+    )
+
+    path = write_csv(<<~CSV)
+      transaction_date|posting_date|section|description|reference_number|amount
+      2025-03-01|2025-03-02|Purchases and Adjustments|STORE A|REF1|12.34
+    CSV
+
+    result = MonthlyCreditCardStatements::Importer.call(path: path, credit_card_account: account)
+
+    assert_equal 1, result.potential_duplicate_count
+    assert result.statement.unreconciled_transactions.sole.potential_duplicate?
+  end
+
+  test "does not flag when the same fingerprint exists only on a different credit card" do
+    other = create_credit_card_account!(name: "Other Card")
+    other_monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: other,
+      source_filename: "other.csv",
+      import_format: "csv"
+    )
+    other_monthly.unreconciled_transactions.create!(
+      date: Date.new(2025, 3, 1),
+      description: "STORE A",
+      amount_cents: 1234
+    )
+
+    path = write_csv(<<~CSV)
+      transaction_date|posting_date|section|description|reference_number|amount
+      2025-03-01|2025-03-02|Purchases and Adjustments|STORE A|REF1|12.34
+    CSV
+
+    result = MonthlyCreditCardStatements::Importer.call(path: path, credit_card_account_name: "Travel Card")
+
+    assert_equal 0, result.potential_duplicate_count
+    assert_not result.statement.unreconciled_transactions.sole.potential_duplicate?
   end
 
   test "rejects unsupported extensions" do
