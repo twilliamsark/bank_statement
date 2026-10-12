@@ -1,13 +1,15 @@
 # STEP 8 SPEC — Import Monthly Credit Card Statements + Reconciliation
 
-Parent: Steps 1–7 complete (`SPEC.md` marked Complete). Step 8 is a **new scope** beyond v1.
+Parent: Steps 1–7 complete (`SPEC.md`). Step 8 is scope beyond v1.
+
+**Status: Complete** (chunks 8.1–8.6). Auto Reconcile match rules locked in [`docs/adr/0001-auto-reconcile-amount-and-prefix.md`](./docs/adr/0001-auto-reconcile-amount-and-prefix.md) and [`CONTEXT.md`](./CONTEXT.md).
 
 **Implementation is chunked** (do not treat this file as a single build checklist):
 
 | Chunk | Spec | Scope |
 | ----- | ---- | ----- |
 | 8.1 | [`SPEC_STEP_8.1.md`](./SPEC_STEP_8.1.md) | `UnreconciledTransaction` (+ `import_fingerprint`) + `MonthlyCreditCardStatement` + monthly import UI (blank categories) |
-| 8.2 | [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md) | **Auto Reconcile** button (amount + 21-char description match) |
+| 8.2 | [`SPEC_STEP_8.2.md`](./SPEC_STEP_8.2.md) | **Auto Reconcile** button (amount + 21-char description match over all committed same-card txns) |
 | 8.2.1 | [`SPEC_STEP_8.2.1.md`](./SPEC_STEP_8.2.1.md) | Card summary: monthly statements above year-end + View Unreconciled entry points |
 | 8.3 | [`SPEC_STEP_8.3.md`](./SPEC_STEP_8.3.md) | Monthly FK on `CreditCardTransaction` + **Save Reconciled** (copy + delete staging) |
 | 8.4 | [`SPEC_STEP_8.4.md`](./SPEC_STEP_8.4.md) | Per-row category/subcategory dropdowns so remaining rows can be saved |
@@ -17,7 +19,7 @@ Parent: Steps 1–7 complete (`SPEC.md` marked Complete). Step 8 is a **new scop
 | 8.5.1 | [`SPEC_STEP_8.5.1.md`](./SPEC_STEP_8.5.1.md) | Edit category/subcategory on `credit_card_accounts/transactions#index` |
 | 8.5.2 | [`SPEC_STEP_8.5.2.md`](./SPEC_STEP_8.5.2.md) | Free-text category/subcategory (unreconciled + account transactions) |
 | 8.6 | [`SPEC_STEP_8.6.md`](./SPEC_STEP_8.6.md) | Fingerprint **potential duplicate** flag on import; must clear before reconcile/save |
-| Later | TBD | Items still in parent Step 8 but not covered by 8.1–8.6 |
+| Later | Optional polish | Deferred staging columns (`posting_date` / `section` / `reference_number`), per-row staging destroy, bulk clear duplicate flag, browser E2E with real BoA PDFs — not required for Step 8 Complete |
 
 This document remains the locked overall design. Chunk specs may simplify naming/sequencing (e.g. staging model `UnreconciledTransaction`, Auto Reconcile as an explicit button instead of import-time auto-fill).
 
@@ -30,7 +32,7 @@ This document remains the locked overall design. Chunk specs may simplify naming
 | Shared txn model     | Monthly and year-end rows both end as `CreditCardTransaction`              |
 | Monthly parent       | New `MonthlyCreditCardStatement` + FK on `CreditCardTransaction`           |
 | Uncategorized home   | **Staging table** until Import commits reconciled rows                     |
-| Category auto-fill   | Match year-end txns by **amount + first 21 description chars** (no date)   |
+| Category auto-fill   | Match committed same-card txns by **amount + first 21 description chars** (no date); year-end **and** previously committed monthly |
 | `import_fingerprint` | Category matching does **not** use it; **potential-duplicate** flagging is Step 8.6 |
 | Date field           | Use gem `transaction_date` as `date`                                       |
 | Match scope          | Same `CreditCardAccount` only                                              |
@@ -51,7 +53,7 @@ This document remains the locked overall design. Chunk specs may simplify naming
 ### Gaps / sharpenings for the SPEC
 
 1. **Two different “match” concepts — name them separately in the SPEC**
-   - **Category match key:** `[description[0, 21], amount_cents]` — fills category/subcategory from a year-end txn on the same card.
+   - **Category match key:** `[description[0, 21], amount_cents]` — fills category/subcategory from committed same-card txns (year-end and monthly).
    - **`import_fingerprint`:** `MD5("#{date}|#{description[0, 21]}|#{amount_cents}")` — reserved for **later** cross-import duplicate detection. Do not use it for Step 8 category fill.
    - Align app helper with the monthly gem: gem uses `description[0, 21]` (21 chars). Current app `import_fingerprint_for` uses `description[..21]` (22 chars). **Step 8 should fix the app helper to `[0, 21]`** and backfill existing fingerprints in the migration/data fix.
 
@@ -97,7 +99,7 @@ This document remains the locked overall design. Chunk specs may simplify naming
 
 ## Goal
 
-Add monthly BoA credit-card statement import via `CCAccountStatement` (`Extractor` / `CSVExtractor`), stage extracted rows for category reconciliation against existing year-end `CreditCardTransaction`s on the same card, then commit reconciled rows into the shared `credit_card_transactions` table under a new `MonthlyCreditCardStatement`.
+Add monthly BoA credit-card statement import via `CCAccountStatement` (`Extractor` / `CSVExtractor`), stage extracted rows for category reconciliation against committed same-card `CreditCardTransaction`s (year-end and monthly), then commit reconciled rows into the shared `credit_card_transactions` table under a new `MonthlyCreditCardStatement`.
 
 ---
 
@@ -194,8 +196,8 @@ Mirror `CreditCardStatements::Importer`:
 For each staging row on account `A`:
 
 1. Build key: `description[0, 21]` + `amount_cents`.
-2. Find year-end-backed `CreditCardTransaction`s for account `A` (`where.not(credit_card_statement_id: nil)` or `joins` year-end statements) with same amount and `LEFT(description, 21)` / Ruby-side prefix match at personal scale.
-3. If matching rows’ `(category, subcategory)` pairs are unanimous → set both, `reconciled = true`, `match_source = "auto"`.
+2. Find committed `CreditCardTransaction`s for account `A` (year-end and monthly via `all_credit_card_transactions`) with same amount and `LEFT(description, 21)` / Ruby-side prefix match at personal scale.
+3. If matching rows’ `(category, subcategory)` pairs are unanimous → set both (derived “reconciled”; no required `match_source` column).
 4. Else leave unreconciled.
 
 ### `CreditCardTransactionReconciliations::Commit`

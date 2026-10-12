@@ -156,7 +156,7 @@ class UnreconciledTransactions::AutoReconcileTest < ActiveSupport::TestCase
       date: Date.new(2025, 7, 1),
       description: "UDEMY: ONLINE COURSES UDEMY.COM CA",
       location: "",
-      amount_cents: 1084,
+      amount_cents: 1518,
       category: "Education",
       subcategory: "Education"
     )
@@ -171,6 +171,56 @@ class UnreconciledTransactions::AutoReconcileTest < ActiveSupport::TestCase
     staging.reload
     assert_equal "Education", staging.category
     assert_equal "Education", staging.subcategory
+  end
+
+  test "does not match when amount differs even if description prefix matches" do
+    create_year_end_txn!(
+      description: "UDEMY: ONLINE COURSES UDEMY.COM CA",
+      amount_cents: 1084,
+      category: "Education",
+      subcategory: "Education"
+    )
+    staging = create_staging!(
+      description: "UDEMY: ONLINE COURSES UDEMY.COM CA",
+      amount_cents: 1518
+    )
+
+    result = UnreconciledTransactions::AutoReconcile.call(monthly_credit_card_statement: @monthly)
+
+    assert_equal 0, result.reconciled_count
+    staging.reload
+    assert_nil staging.category
+    assert_nil staging.subcategory
+  end
+
+  test "fills when year-end and monthly committed matches agree on the same pair" do
+    create_year_end_txn!(
+      description: "COFFEE SHOP MAIN STREET YEAR",
+      amount_cents: 450,
+      category: "Merchandise",
+      subcategory: "Restaurants"
+    )
+    prior_monthly = MonthlyCreditCardStatement.create!(
+      credit_card_account: @account,
+      source_filename: "prior-monthly.csv",
+      import_format: "csv"
+    )
+    prior_monthly.credit_card_transactions.create!(
+      date: Date.new(2025, 7, 1),
+      description: "COFFEE SHOP MAIN STREET MONTH",
+      location: "",
+      amount_cents: 450,
+      category: "Merchandise",
+      subcategory: "Restaurants"
+    )
+    staging = create_staging!(description: "COFFEE SHOP MAIN STREET NEW", amount_cents: 450)
+
+    result = UnreconciledTransactions::AutoReconcile.call(monthly_credit_card_statement: @monthly)
+
+    assert_equal 1, result.reconciled_count
+    staging.reload
+    assert_equal "Merchandise", staging.category
+    assert_equal "Restaurants", staging.subcategory
   end
 
   test "skips potential duplicate rows" do

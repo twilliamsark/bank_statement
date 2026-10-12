@@ -1,6 +1,6 @@
 # Bank Statement App — Import, Schema, Summary & Transaction Pages
 
-**Project status: Complete** (Steps 1–7 as spec’d; final suite 95 tests green)
+**Project status: Complete** (Steps 1–7 as originally spec’d; **Step 8** monthly import + reconciliation complete — see [`SPEC_STEP_8.md`](./SPEC_STEP_8.md), glossary in [`CONTEXT.md`](./CONTEXT.md))
 
 ## Query used to generate SPEC.md
 

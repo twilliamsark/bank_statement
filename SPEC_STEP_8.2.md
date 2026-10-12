@@ -10,7 +10,7 @@ Status: **Complete**
 
 ## Goal
 
-Add an **Auto Reconcile** button on the Unreconciled Transactions UI that walks staging rows **missing category and/or subcategory** and fills them from matching year-end `CreditCardTransaction`s using the Step 8 match algorithm.
+Add an **Auto Reconcile** button on the Unreconciled Transactions UI that walks staging rows **missing category and/or subcategory** and fills them from matching committed `CreditCardTransaction`s (year-end **and** previously saved monthly) using the Step 8 match algorithm.
 
 **Out of this chunk:** manual dropdown reconcile, committing staging rows into `CreditCardTransaction`, duplicate detection via `import_fingerprint`.
 
@@ -23,11 +23,11 @@ Add an **Auto Reconcile** button on the Unreconciled Transactions UI that walks 
 | Trigger | Explicit **Auto Reconcile** button (not during monthly import) |
 | Which rows | Only `UnreconciledTransaction`s that do **not** already have both `category` and `subcategory` set (and are not potential duplicates — see 8.6) |
 | Match key | Same account + `amount_cents` + first **21** description characters (`description[0, 21]`) — **no date** |
-| Match source | Year-end-backed `CreditCardTransaction`s on the same `CreditCardAccount` only |
-| Ambiguous matches | If matching year-end rows disagree on `(category, subcategory)`, leave the staging row unchanged |
-| Unanimous matches | Set `category` + `subcategory` on the staging row |
+| Match source | All committed `CreditCardTransaction`s on the same `CreditCardAccount` (year-end **and** previously committed monthly) |
+| Ambiguous matches | If matching committed rows disagree on `(category, subcategory)`, leave the staging row unchanged |
+| Unanimous matches | Set `category` + `subcategory` on the staging row (source mix does not matter if the pair is unanimous) |
 
-This matches the locked algorithm in [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (category match key vs `import_fingerprint`).
+See also [`docs/adr/0001-auto-reconcile-amount-and-prefix.md`](./docs/adr/0001-auto-reconcile-amount-and-prefix.md). Category match key stays separate from `import_fingerprint` ([`SPEC_STEP_8.md`](./SPEC_STEP_8.md)).
 
 ---
 
@@ -35,12 +35,12 @@ This matches the locked algorithm in [`SPEC_STEP_8.md`](./SPEC_STEP_8.md) (categ
 
 For each eligible `UnreconciledTransaction` `U` belonging to monthly statement `M` on credit card account `A`:
 
-1. Skip if `U.category` and `U.subcategory` are both present.
+1. Skip if `U.potential_duplicate` (once 8.6 exists) or if `U.category` and `U.subcategory` are both present.
 2. Build prefix: `description.to_s[0, 21]`.
-3. Find candidate year-end `CreditCardTransaction`s for account `A`:
+3. Find candidate committed `CreditCardTransaction`s for account `A` (via `all_credit_card_transactions` or equivalent):
    - Same `amount_cents` as `U`
    - Description prefix equals the 21-char prefix (SQL `LEFT(description, 21)` or equivalent at personal scale)
-   - Scoped to the same card only (via `credit_card_statements` / account association — not monthly-committed rows for this chunk; year-end parents only)
+   - Same card only — year-end and monthly-committed rows both eligible
 4. Collect distinct `(category, subcategory)` pairs from candidates.
 5. If exactly **one** distinct pair → assign both fields on `U` and save.
 6. If zero candidates, or multiple disagreeing pairs → leave `U` unchanged.
@@ -118,9 +118,12 @@ Exact controller name is flexible; button must POST and return to the list.
 ## Tests (minimum)
 
 - Unanimous same-account year-end match on amount + 21-char prefix → fills category/subcategory
+- Previously committed monthly row with same amount + prefix → fills
+- Same prefix but **different amount** → row unchanged
+- Year-end + monthly committed matches that **agree** on the pair → fills
 - No candidates → row unchanged
-- Multiple year-end matches with **different** category/subcategory pairs → row unchanged
-- Multiple year-end matches that **agree** → fills once
+- Multiple matches with **different** category/subcategory pairs → row unchanged
+- Multiple matches that **agree** → fills once
 - Rows that already have both fields are not overwritten / are skipped
 - Different credit card account with identical amount+prefix does **not** match
 - Integration: Auto Reconcile button on unreconciled list updates displayed categories after POST
@@ -140,6 +143,6 @@ Exact controller name is flexible; button must POST and return to the list.
 ## Done when
 
 - User can import a monthly statement (8.1), then click **Auto Reconcile**
-- Matching staging rows get category/subcategory from same-account year-end transactions per the 21-char + amount rule
+- Matching staging rows get category/subcategory from same-account committed transactions (year-end and monthly) per the 21-char + amount rule
 - Ambiguous or missing matches stay blank
 - No rows are committed to `CreditCardTransaction` yet

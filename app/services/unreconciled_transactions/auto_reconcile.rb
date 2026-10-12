@@ -54,7 +54,10 @@ module UnreconciledTransactions
     def unanimous_category_pair(staging, committed_txns)
       prefix = CreditCardTransaction.category_match_prefix(staging.description)
       pairs = committed_txns
-        .select { |txn| CreditCardTransaction.category_match_prefix(txn.description) == prefix }
+        .select do |txn|
+          txn.amount_cents == staging.amount_cents &&
+            CreditCardTransaction.category_match_prefix(txn.description) == prefix
+        end
         .map { |txn| [ txn.category, txn.subcategory ] }
         .uniq
 
