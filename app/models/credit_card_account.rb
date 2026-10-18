@@ -36,6 +36,22 @@ class CreditCardAccount < ApplicationRecord
     )
   end
 
+  def yearly_period_start
+    credit_card_statements.minimum(:statement_year)
+  end
+
+  def yearly_period_end
+    credit_card_statements.maximum(:statement_year)
+  end
+
+  def monthly_period_start
+    monthly_credit_card_statements.minimum(:period_start)
+  end
+
+  def monthly_period_end
+    monthly_credit_card_statements.minimum(:period_end)
+  end
+
   private
 
   def assign_name_key

@@ -27,6 +27,8 @@
         <thead>
           <tr>
             <th>Card</th>
+            <th>Years coverage</th>
+            <th>Period coverage</th>
             <th>Statements</th>
             <th>Transactions</th>
             <th class="text-right"> </th>
@@ -36,6 +38,20 @@
           <% @credit_card_accounts.each do |account| %>
             <tr>
               <td class="font-medium text-ink"><%= account.name %></td>
+              <td>
+                <% if account.yearly_period_start || account.yearly_period_end %>
+                  <%= display_text(account.yearly_period_start) %> - <%= display_text(account.yearly_period_end) %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+              <td>
+                <% if account.monthly_period_start || account.monthly_period_end %>
+                  <%= display_date(account.monthly_period_start) %> - <%= display_date(account.monthly_period_end) %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
               <td><%= account.credit_card_statements.size + account.monthly_credit_card_statements.size %></td>
               <td><%= account.credit_card_transactions.size + account.monthly_credit_card_transactions.size %></td>
               <td class="space-x-3 text-right">
@@ -47,16 +63,6 @@
                 <%= link_to(
                   "Transactions",
                   credit_card_account_transactions_path(account),
-                  class: "text-sm font-medium text-slate-600 hover:text-brand-700"
-                ) %>
-                <%= link_to(
-                  "Import year-end",
-                  new_credit_card_statement_path(credit_card_account_id: account.id),
-                  class: "text-sm font-medium text-slate-600 hover:text-brand-700"
-                ) %>
-                <%= link_to(
-                  "Import monthly",
-                  new_monthly_credit_card_statement_path(credit_card_account_id: account.id),
                   class: "text-sm font-medium text-slate-600 hover:text-brand-700"
                 ) %>
               </td>

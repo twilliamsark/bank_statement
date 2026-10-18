@@ -84,7 +84,7 @@ class CreditCardStatementsTest < ActionDispatch::IntegrationTest
   test "credit cards nav points at accounts index" do
     get root_path
     assert_response :success
-    assert_select "a[href=?]", credit_card_accounts_path, text: "Credit cards"
+    assert_select "a[href=?]", credit_card_accounts_path, text: "Credit card accounts"
   end
 
   private

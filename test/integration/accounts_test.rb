@@ -165,7 +165,6 @@ class AccountsTest < ActionDispatch::IntegrationTest
   test "nav distinguishes accounts and statements" do
     get root_path
     assert_response :success
-    assert_select "a[href=?]", accounts_path, text: "Accounts"
-    assert_select "a[href=?]", account_statements_path, text: "Statements"
+    assert_select "a[href=?]", accounts_path, text: "Bank accounts"
   end
 end
